@@ -27,6 +27,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	compileOnly 'org.projectlombok:lombok'
+	implementation group: 'org.hibernate', name: 'hibernate-spatial', version: '6.5.2.Final'
 	// mysql
 	implementation 'mysql:mysql-connector-java:8.0.28'
 	// lombok
