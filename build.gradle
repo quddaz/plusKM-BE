@@ -27,6 +27,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	compileOnly 'org.projectlombok:lombok'
+	//hibernate spatial
+	implementation group: 'org.hibernate', name: 'hibernate-spatial', version: '6.5.2.Final'
 	// mysql
 	implementation 'mysql:mysql-connector-java:8.0.28'
 	// lombok
@@ -38,6 +40,11 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	// 데이터베이스 쿼리 로깅
 	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
+
+	//csv 파일
+	implementation 'com.opencsv:opencsv:5.5.2'
+	//MySQL 공간 좌표
+	implementation 'org.locationtech.jts:jts-core:1.20.0'
 }
 
 tasks.named('test') {
