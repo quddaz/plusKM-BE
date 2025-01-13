@@ -1,6 +1,5 @@
-package personal_projects.backend.domain.place;
+package personal_projects.backend.domain.place.domain;
 
-import com.fasterxml.jackson.databind.annotation.EnumNaming;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,9 +31,9 @@ public class Place {
     private Point coordinate;
 
     @Builder
-    public Place(String name, Place_type place_type, String address, String tel, Point coordinate) {
+    public Place(String name, String place_type, String address, String tel, Point coordinate) {
         this.name = name;
-        this.place_type = place_type;
+        this.place_type = Place_type.valueOf(place_type);
         this.address = address;
         this.tel = tel;
         this.coordinate = coordinate;

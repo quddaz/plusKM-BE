@@ -1,12 +1,12 @@
-package personal_projects.backend.domain.medical;
+package personal_projects.backend.domain.medical.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import personal_projects.backend.domain.place.Place;
-import personal_projects.backend.domain.user.User;
+import personal_projects.backend.domain.place.domain.Place;
+import personal_projects.backend.domain.user.domain.User;
 
 @Entity
 @Builder

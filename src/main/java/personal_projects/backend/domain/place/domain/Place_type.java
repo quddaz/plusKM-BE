@@ -1,4 +1,4 @@
-package personal_projects.backend.domain.place;
+package personal_projects.backend.domain.place.domain;
 
 public enum Place_type {
     한의원,
@@ -7,10 +7,11 @@ public enum Place_type {
     보건지소,
     치과의원,
     의원,
+    병원,
     보건의료원,
     보건소,
     종합병원,
-    상급종합병원,
+    상급종합,
     정신병원,
     조산원,
     치과병원,
