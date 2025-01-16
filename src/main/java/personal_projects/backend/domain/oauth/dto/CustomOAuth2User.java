@@ -26,7 +26,7 @@ public class CustomOAuth2User implements OAuth2User {
     public static CustomOAuth2User fromUser(User user) {
         return CustomOAuth2User.builder()
             .userId(user.getId())
-            .socialId(user.getSocial_id())
+            .socialId(user.getSocialId())
             .name(user.getName())
             .email(user.getEmail())
             .roles(List.of(user.getRole().name()))

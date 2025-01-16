@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
@@ -57,7 +58,7 @@ public class JwtTokenProvider {
     /**
      * RefreshToken 생성
      */
-    public ResponseCookie createRefreshToken(Long userId, List<String> roles) {
+    public Cookie createRefreshToken(Long userId, List<String> roles) {
         long now = (new Date()).getTime();
 
         // Refresh token 유효 기간 설정
@@ -103,13 +104,15 @@ public class JwtTokenProvider {
         return userService.findById(id);
     }
 
-    public ResponseCookie createCookie(String refreshToken) {
-        return ResponseCookie.from("REFRESH_TOKEN", refreshToken)
-            .maxAge(jwtProperties.refreshTokenExpiration() / 1000)
-            .path("/")
-            .secure(true)
-            .sameSite("None")
-            .httpOnly(true)
-            .build();
+    /**
+     * 일반 Cookie 생성
+     */
+    public Cookie createCookie(String refreshToken) {
+        Cookie cookie = new Cookie("REFRESH_TOKEN", refreshToken);
+        cookie.setMaxAge((int) (jwtProperties.refreshTokenExpiration() / 1000)); // 초 단위로 설정
+        cookie.setPath("/");
+        cookie.setSecure(true); // HTTPS에서만 전송
+        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
+        return cookie;
     }
 }
