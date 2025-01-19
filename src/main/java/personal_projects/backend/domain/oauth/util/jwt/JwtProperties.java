@@ -1,4 +1,4 @@
-package personal_projects.backend.oauth.util.jwt;
+package personal_projects.backend.domain.oauth.util.jwt;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

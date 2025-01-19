@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import personal_projects.backend.domain.oauth.dto.social.Oauth2Response;
 
 import java.util.List;
 
@@ -27,11 +28,8 @@ public class User {
     @Column(name = "oauth_type", nullable = false, length = 20)
     private Oauth_type oauth_type;
 
-    @Column(name = "social_id", nullable = false, length = 100)
-    private String social_id;
-
-    @Column(name = "region", nullable = false, length = 20)
-    private String region;
+    @Column(name = "socialId", nullable = false, length = 100)
+    private String socialId;
 
     @Column(name = "email", nullable = false, length = 50)
     private String email;
@@ -41,13 +39,21 @@ public class User {
     private Role role;
 
     @Builder
-    public User(String name, Oauth_type oauth_type, String social_id, String region, String email, Role role) {
+    public User(String name, Oauth_type oauth_type, String socialId, String email, Role role) {
         this.name = name;
         this.oauth_type = oauth_type;
-        this.social_id = social_id;
-        this.region = region;
+        this.socialId = socialId;
         this.email = email;
         this.role = role;
+    }
+    public static User fromOAuth2Response(Oauth2Response oAuth2Response) {
+        return User.builder()
+            .email(oAuth2Response.getEmail())
+            .name(oAuth2Response.getName())
+            .oauth_type(oAuth2Response.getProvider())
+            .socialId(oAuth2Response.getProviderId())
+            .role(Role.USER)
+            .build();
     }
     public List<String> getRoles() {
         return List.of(this.role.name());

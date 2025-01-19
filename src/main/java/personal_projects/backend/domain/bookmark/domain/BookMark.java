@@ -1,4 +1,4 @@
-package personal_projects.backend.domain.book_mark.domain;
+package personal_projects.backend.domain.bookmark.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

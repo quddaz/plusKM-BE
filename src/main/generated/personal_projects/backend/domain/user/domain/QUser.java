@@ -27,9 +27,9 @@ public class QUser extends EntityPathBase<User> {
 
     public final EnumPath<Oauth_type> oauth_type = createEnum("oauth_type", Oauth_type.class);
 
-    public final StringPath region = createString("region");
+    public final EnumPath<Role> role = createEnum("role", Role.class);
 
-    public final StringPath social_id = createString("social_id");
+    public final StringPath socialId = createString("socialId");
 
     public QUser(String variable) {
         super(User.class, forVariable(variable));

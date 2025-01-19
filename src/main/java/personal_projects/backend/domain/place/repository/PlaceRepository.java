@@ -6,4 +6,5 @@ import personal_projects.backend.domain.place.domain.Place;
 
 @Repository
 public interface PlaceRepository extends JpaRepository<Place, Long> {
+    boolean existsByTel(String tel);
 }

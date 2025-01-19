@@ -1,4 +1,4 @@
-package personal_projects.backend.oauth.dto;
+package personal_projects.backend.domain.oauth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

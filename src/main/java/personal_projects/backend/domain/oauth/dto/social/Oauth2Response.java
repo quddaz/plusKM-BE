@@ -1,4 +1,4 @@
-package personal_projects.backend.oauth.dto.social;
+package personal_projects.backend.domain.oauth.dto.social;
 
 import personal_projects.backend.domain.user.domain.Oauth_type;
 
