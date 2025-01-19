@@ -1,6 +1,7 @@
 package personal_projects.backend.domain.oauth.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,9 +28,9 @@ public class AuthController {
             .body(ResponseTemplate.EMPTY_RESPONSE);
     }
 
+    @GetMapping("/{id}")
     @Operation(summary = "테스트 토큰 발급", description = "userId를 받아 테스트 토큰을 발급합니다")
-    @GetMapping("/test/{userId}")
-    public String test(@PathVariable Long userId) {
-        return authService.generateTestToken(userId);
+    public ResponseTemplate<?> test(@PathVariable(name = "id") long id) {
+        return ResponseTemplate.from(authService.generateTestToken(id));
     }
 }
