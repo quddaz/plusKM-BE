@@ -1,4 +1,4 @@
-package personal_projects.backend.oauth.util.jwt;
+package personal_projects.backend.domain.oauth.util.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -7,15 +7,11 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseCookie;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 import personal_projects.backend.domain.user.domain.User;
-import personal_projects.backend.domain.user.repository.UserRepository;
 import personal_projects.backend.domain.user.service.UserService;
 
 import java.security.Key;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;

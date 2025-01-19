@@ -1,4 +1,4 @@
-package personal_projects.backend.domain.book_mark.domain;
+package personal_projects.backend.domain.bookmark.domain;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
@@ -16,7 +16,7 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QBookMark extends EntityPathBase<BookMark> {
 
-    private static final long serialVersionUID = 201230330L;
+    private static final long serialVersionUID = 876252131L;
 
     private static final PathInits INITS = PathInits.DIRECT2;
 

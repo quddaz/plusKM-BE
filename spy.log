@@ -1,0 +1,1 @@
+1737022019852|56|statement|connection 3|url jdbc:mysql://localhost:3306/unip?serverTimezone=Asia/Seoul|select p1_0.id from place p1_0 where p1_0.tel=? limit ?|select p1_0.id from place p1_0 where p1_0.tel='062-956-0365' limit 1

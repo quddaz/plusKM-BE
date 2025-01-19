@@ -1,4 +1,4 @@
-package personal_projects.backend.oauth.exception.errorcode;
+package personal_projects.backend.domain.oauth.exception.errorcode;
 
 
 import lombok.Getter;

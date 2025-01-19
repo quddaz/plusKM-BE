@@ -13,6 +13,9 @@ import org.locationtech.jts.geom.Point;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "place", indexes = {
+    @Index(name = "idx_place_coordinate", columnList = "coordinate", unique = false)
+})
 public class Place {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
