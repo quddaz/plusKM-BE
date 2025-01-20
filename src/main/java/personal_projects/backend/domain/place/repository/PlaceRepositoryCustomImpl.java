@@ -39,17 +39,28 @@ public class PlaceRepositoryCustomImpl implements PlaceRepositoryCustom {
     }
 
     private BooleanBuilder createSearchConditions(BooleanBuilder builder, Point center, Search_Type searchType, double bufferDistance) {
-        String pointWKT = String.format("POINT(%f %f)", center.getX(), center.getY());
+        // 위도와 경도의 변환 계수
+        double lat = center.getY();
+        double lon = center.getX();
 
-        // bufferDistance는 km 단위로 받아온다. m 단위로 변환
-        double meterRange = bufferDistance * 1000;
-        // 경도, 위도에서 0.01도는 1100m인 것을 사용해 몇 m는 위도, 경도로 어느 정도인지 계산
-        double meterToDegree = meterRange * 0.01 / 1100;
+        // 킬로미터를 위도/경도 차이로 변환
+        double latDistance = bufferDistance / 111.32; // 위도 거리 변환 (1도당 111.32 km)
+        double lonDistance = bufferDistance / (111.32 * Math.cos(Math.toRadians(lat))); // 경도 거리 변환
+
+        // 계산된 거리로 좌표 범위 설정
+        double latMin = lat - latDistance;
+        double latMax = lat + latDistance;
+        double lonMin = lon - lonDistance;
+        double lonMax = lon + lonDistance;
+
+        // 폴리곤 WKT 생성 (위도, 경도 순서로)
+        String polygonWKT = String.format("POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))",
+            lonMin, latMin, lonMin, latMax, lonMax, latMax, lonMax, latMin, lonMin, latMin);
 
         builder.and(Expressions.booleanTemplate(
-            "ST_Intersects({0}, ST_Buffer(ST_GeomFromText({1}, 4326), {2}))",
-            place.coordinate, pointWKT, meterToDegree));
+            "ST_Within({0}, ST_GeomFromText({1}, 4326))", place.coordinate, polygonWKT));
 
+        // SearchType에 따른 추가 조건
         if (searchType == Search_Type.HOSPITAL) {
             builder.and(place.place_type.ne(Place_type.약국)); // 약국이 아닌 병원
         } else if (searchType == Search_Type.PHARMACY) {
@@ -58,5 +69,6 @@ public class PlaceRepositoryCustomImpl implements PlaceRepositoryCustom {
 
         return builder;
     }
+
 
 }
