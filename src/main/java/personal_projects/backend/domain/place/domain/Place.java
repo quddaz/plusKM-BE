@@ -6,6 +6,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
+import personal_projects.backend.domain.bookmark.domain.BookMark;
+import personal_projects.backend.domain.medical.domain.Medical;
+
+import java.util.List;
 
 
 @Entity
@@ -14,7 +18,7 @@ import org.locationtech.jts.geom.Point;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "place", indexes = {
-    @Index(name = "idx_place_coordinate", columnList = "coordinate", unique = false)
+    @Index(name = "idx_place_coordinate", columnList = "coordinate")
 })
 public class Place {
     @Id
@@ -32,6 +36,12 @@ public class Place {
 
     @Column(nullable = false, columnDefinition = "POINT SRID 4326")
     private Point coordinate;
+
+    @OneToMany(mappedBy = "place", orphanRemoval = true, cascade = CascadeType.REMOVE)
+    private List<BookMark> bookMarks;
+
+    @OneToMany(mappedBy = "place", orphanRemoval = true, cascade = CascadeType.REMOVE)
+    private List<Medical> medicals;
 
     @Builder
     public Place(String name, String place_type, String address, String tel, Point coordinate) {

@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.place.dto.request.SearchPlaceRequest;
 import personal_projects.backend.domain.place.dto.response.SearchResultPlaceResponse;
+import personal_projects.backend.domain.place.exception.PlaceNotFoundException;
+import personal_projects.backend.domain.place.exception.errorCode.PlaceErrorCode;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
 import org.locationtech.jts.geom.GeometryFactory;
 
@@ -23,7 +25,7 @@ public class PlaceService {
     private final GeometryFactory geometryFactory;
 
     public Place findById(Long id) {
-        return placeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 id의 place가 없습니다."));
+        return placeRepository.findById(id).orElseThrow(() -> new PlaceNotFoundException(PlaceErrorCode.PLACE_NOT_FOUND));
     }
 
     public List<SearchResultPlaceResponse> getPlacesWithinBuffer(SearchPlaceRequest searchPlaceRequest) {
