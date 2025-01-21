@@ -7,6 +7,7 @@ import com.querydsl.core.types.dsl.*;
 import com.querydsl.core.types.PathMetadata;
 import javax.annotation.processing.Generated;
 import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
@@ -21,9 +22,13 @@ public class QPlace extends EntityPathBase<Place> {
 
     public final StringPath address = createString("address");
 
+    public final ListPath<personal_projects.backend.domain.bookmark.domain.BookMark, personal_projects.backend.domain.bookmark.domain.QBookMark> bookMarks = this.<personal_projects.backend.domain.bookmark.domain.BookMark, personal_projects.backend.domain.bookmark.domain.QBookMark>createList("bookMarks", personal_projects.backend.domain.bookmark.domain.BookMark.class, personal_projects.backend.domain.bookmark.domain.QBookMark.class, PathInits.DIRECT2);
+
     public final ComparablePath<org.locationtech.jts.geom.Point> coordinate = createComparable("coordinate", org.locationtech.jts.geom.Point.class);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
+
+    public final ListPath<personal_projects.backend.domain.medical.domain.Medical, personal_projects.backend.domain.medical.domain.QMedical> medicals = this.<personal_projects.backend.domain.medical.domain.Medical, personal_projects.backend.domain.medical.domain.QMedical>createList("medicals", personal_projects.backend.domain.medical.domain.Medical.class, personal_projects.backend.domain.medical.domain.QMedical.class, PathInits.DIRECT2);
 
     public final StringPath name = createString("name");
 
