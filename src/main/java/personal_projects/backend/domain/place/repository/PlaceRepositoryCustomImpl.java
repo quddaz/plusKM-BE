@@ -48,7 +48,7 @@ public class PlaceRepositoryCustomImpl implements PlaceRepositoryCustom {
 
         // 폴리곤 WKT 생성 (위도, 경도 순서로)
         String polygonWKT = String.format("POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))",
-            lonMin, latMin, lonMin, latMax, lonMax, latMax, lonMax, latMin, lonMin, latMin);
+            latMin, lonMin, latMin, lonMax, latMax, lonMax, latMax, lonMin, latMin, lonMin);
 
         builder.and(Expressions.booleanTemplate(
             "ST_Within({0}, ST_GeomFromText({1}, 4326))", place.coordinate, polygonWKT));
