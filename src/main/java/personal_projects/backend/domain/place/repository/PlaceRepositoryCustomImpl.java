@@ -5,25 +5,22 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.locationtech.jts.geom.Point;
-import org.springframework.stereotype.Repository;
-import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.place.domain.Place_type;
 import personal_projects.backend.domain.place.dto.Search_Type;
 import personal_projects.backend.domain.place.dto.response.SearchResultPlaceResponse;
+
 import java.util.List;
 
 import static personal_projects.backend.domain.place.domain.QPlace.place;
 
-@Repository
 @RequiredArgsConstructor
 public class PlaceRepositoryCustomImpl implements PlaceRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<SearchResultPlaceResponse> findPlacesWithinBuffer(Point center, double bufferDistance, Search_Type searchType) {
-        BooleanBuilder builder = createSearchConditions(new BooleanBuilder(), center, searchType, bufferDistance);
+    public List<SearchResultPlaceResponse> findPlacesWithinBuffer(double x, double y, double bufferDistance, Search_Type searchType) {
+        BooleanBuilder builder = createSearchConditions(new BooleanBuilder(), x, y, searchType, bufferDistance);
 
         return queryFactory.select(Projections.constructor(SearchResultPlaceResponse.class,
                 place.id,
@@ -38,20 +35,16 @@ public class PlaceRepositoryCustomImpl implements PlaceRepositoryCustom {
             .fetch();
     }
 
-    private BooleanBuilder createSearchConditions(BooleanBuilder builder, Point center, Search_Type searchType, double bufferDistance) {
-        // 위도와 경도의 변환 계수
-        double lat = center.getY();
-        double lon = center.getX();
-
+    private BooleanBuilder createSearchConditions(BooleanBuilder builder, double x, double y, Search_Type searchType, double bufferDistance) {
         // 킬로미터를 위도/경도 차이로 변환
         double latDistance = bufferDistance / 111.32; // 위도 거리 변환 (1도당 111.32 km)
-        double lonDistance = bufferDistance / (111.32 * Math.cos(Math.toRadians(lat))); // 경도 거리 변환
+        double lonDistance = bufferDistance / (111.32 * Math.cos(Math.toRadians(y))); // 경도 거리 변환
 
         // 계산된 거리로 좌표 범위 설정
-        double latMin = lat - latDistance;
-        double latMax = lat + latDistance;
-        double lonMin = lon - lonDistance;
-        double lonMax = lon + lonDistance;
+        double latMin = y - latDistance;
+        double latMax = y + latDistance;
+        double lonMin = x - lonDistance;
+        double lonMax = x + lonDistance;
 
         // 폴리곤 WKT 생성 (위도, 경도 순서로)
         String polygonWKT = String.format("POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))",
@@ -69,6 +62,4 @@ public class PlaceRepositoryCustomImpl implements PlaceRepositoryCustom {
 
         return builder;
     }
-
-
 }

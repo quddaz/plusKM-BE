@@ -3,16 +3,19 @@ package personal_projects.backend.global.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.DbRefResolver;
 import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
 import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+import org.springframework.data.mongodb.core.index.GeospatialIndex;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import personal_projects.backend.domain.place.domain.mongo.MongoPlace;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "personal_projects.backend.domain.place.domain.mongo")
-public class MongoConfig {
+@EnableMongoRepositories(basePackages = "personal_projects.backend.domain.place.repository.mongo")
+public class MongoConfig{
 
     @Bean
     public MappingMongoConverter mappingMongoConverter(MongoDatabaseFactory mongoDatabaseFactory,
