@@ -9,19 +9,18 @@ import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
 
-@Document(collection = "place")  // MongoDB의 Collection에 해당
+@Document(collection = "place")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 public class MongoPlace {
 
-    @Id  // MongoDB의 _id 필드에 해당
+    @Id
     private String id;
-
+    private Long placeId;
     private String name;
     private String placeType;
     private String address;

@@ -141,7 +141,7 @@ public class PlaceInitializer implements ApplicationRunner {
 
     private Point createPoint(double latitude, double longitude) {
         GeometryFactory geometryFactory = new GeometryFactory();
-        Point point = geometryFactory.createPoint(new Coordinate(longitude, latitude));
+        Point point = geometryFactory.createPoint(new Coordinate(latitude, longitude));
         point.setSRID(4326);
         return point;
     }

@@ -5,8 +5,8 @@ import personal_projects.backend.domain.place.dto.Search_Type;
 
 @Builder
 public record SearchPlaceRequest(
-    double latitude,
     double longitude,
+    double latitude,
     double bufferDistance,
     Search_Type searchType
 ) {
