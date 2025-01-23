@@ -16,6 +16,16 @@ import java.util.Map;
 @Slf4j
 public class ExceptionManager {
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ResponseTemplate> handleException(Exception e) {
+        log.error("Exception: ", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseTemplate.fail(e.getMessage()));
+    }
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ResponseTemplate> handleRuntimeException(RuntimeException e) {
+        log.error("RuntimeException: ", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseTemplate.fail(e.getMessage()));
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ResponseTemplate> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -29,4 +39,5 @@ public class ExceptionManager {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseTemplate.fail(errors));
     }
+
 }
