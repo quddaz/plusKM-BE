@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.place.dto.request.SearchPlaceRequest;
+import personal_projects.backend.domain.place.dto.response.SearchBookMarkPlaceResponse;
 import personal_projects.backend.domain.place.dto.response.SearchDetailPlaceResponse;
 import personal_projects.backend.domain.place.dto.response.SearchResultPlaceResponse;
 import personal_projects.backend.domain.place.exception.PlaceNotFoundException;
@@ -26,12 +27,18 @@ public class PlaceService {
         return placeRepository.findById(id).orElseThrow(() -> new PlaceNotFoundException(PlaceErrorCode.PLACE_NOT_FOUND));
     }
 
+    /* MySQL을 사용하는 구버전
     public List<SearchResultPlaceResponse> getPlacesWithinBuffer(SearchPlaceRequest searchPlaceRequest) {
         return placeRepository.findPlacesWithinBuffer(searchPlaceRequest.longitude(), searchPlaceRequest.latitude(),
             searchPlaceRequest.bufferDistance(), searchPlaceRequest.searchType());
     }
+     */
 
-    public List<SearchDetailPlaceResponse> findPlaceDetailByPlaceId(Long placeId, Long userId) {
+    public SearchDetailPlaceResponse findPlaceDetailByPlaceId(Long placeId, Long userId) {
         return placeRepository.findPlaceDetailByPlaceId(placeId, userId);
+    }
+
+    public List<SearchBookMarkPlaceResponse> findBookMarkPlacesByUserId(Long userId) {
+        return placeRepository.findBookMarkPlacesByUserId(userId);
     }
 }

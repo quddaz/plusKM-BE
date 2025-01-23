@@ -34,9 +34,16 @@ public class PlaceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getPlaceDetail(@PathVariable Long id,
+    public ResponseEntity<?> getPlaceDetail(@PathVariable(name = "id") long id,
                                             @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
         return ResponseEntity
             .ok(ResponseTemplate.from(placeService.findPlaceDetailByPlaceId(id, customOAuth2User.getUserId())));
+    }
+
+    @GetMapping("/bookmark")
+    public ResponseEntity<?> getBookMarkPlaces(
+        @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
+        return ResponseEntity
+            .ok(ResponseTemplate.from(placeService.findBookMarkPlacesByUserId(customOAuth2User.getUserId())));
     }
 }

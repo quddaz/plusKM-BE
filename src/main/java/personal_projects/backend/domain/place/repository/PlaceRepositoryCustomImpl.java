@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import personal_projects.backend.domain.oauth.util.jwt.JwtProperties;
 import personal_projects.backend.domain.place.domain.Place_type;
 import personal_projects.backend.domain.place.dto.Search_Type;
+import personal_projects.backend.domain.place.dto.response.SearchBookMarkPlaceResponse;
 import personal_projects.backend.domain.place.dto.response.SearchDetailPlaceResponse;
 import personal_projects.backend.domain.place.dto.response.SearchResultPlaceResponse;
 
@@ -69,7 +70,7 @@ public class PlaceRepositoryCustomImpl implements PlaceRepositoryCustom {
     }
 
     @Override
-    public List<SearchDetailPlaceResponse> findPlaceDetailByPlaceId(Long placeId, Long userId) {
+    public SearchDetailPlaceResponse findPlaceDetailByPlaceId(Long placeId, Long userId) {
         return queryFactory.select(Projections.constructor(SearchDetailPlaceResponse.class,
                 place.id,
                 place.name,
@@ -84,6 +85,21 @@ public class PlaceRepositoryCustomImpl implements PlaceRepositoryCustom {
             ))
             .from(place)
             .where(place.id.eq(placeId))
+            .fetchOne();
+    }
+
+    @Override
+    public List<SearchBookMarkPlaceResponse> findBookMarkPlacesByUserId(Long userId) {
+        return queryFactory.select(Projections.constructor(SearchBookMarkPlaceResponse.class,
+                place.id,
+                place.name,
+                place.address,
+                place.tel,
+                place.place_type.stringValue()
+            ))
+            .from(place)
+            .join(bookMark.place, place)
+            .where(bookMark.user.id.eq(userId))
             .fetch();
     }
 }

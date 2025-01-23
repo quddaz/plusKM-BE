@@ -20,7 +20,7 @@ public class BookMarkController {
     private final BookMarkService bookMarkService;
 
     @GetMapping("/check/{id}")
-    public ResponseEntity<ResponseTemplate<?>> checkBookMark(@PathVariable Long id,
+    public ResponseEntity<ResponseTemplate<?>> checkBookMark(@PathVariable(name = "id") long id,
                                                              @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
         bookMarkService.checkBookMark(id, customOAuth2User.getUserId());
         return ResponseEntity.ok(ResponseTemplate.EMPTY_RESPONSE);
