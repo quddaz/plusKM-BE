@@ -19,7 +19,7 @@ public class PlaceController {
         @RequestBody SearchPlaceRequest searchPlaceRequest) {
         return ResponseTemplate.from(placeService.getPlacesWithinBuffer(searchPlaceRequest));
     }
-    @PostMapping("/buffer/mongo")
+    @PostMapping("/mongo")
     public ResponseTemplate<?> getPlacesWithinBufferMongo(
         @RequestBody SearchPlaceRequest searchPlaceRequest) {
         return ResponseTemplate.from(placeMongoService.getPlacesWithinBuffer(searchPlaceRequest));
