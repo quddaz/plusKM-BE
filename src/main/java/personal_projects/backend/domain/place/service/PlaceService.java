@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.place.dto.request.SearchPlaceRequest;
+import personal_projects.backend.domain.place.dto.response.SearchDetailPlaceResponse;
 import personal_projects.backend.domain.place.dto.response.SearchResultPlaceResponse;
 import personal_projects.backend.domain.place.exception.PlaceNotFoundException;
 import personal_projects.backend.domain.place.exception.errorCode.PlaceErrorCode;
@@ -30,4 +31,7 @@ public class PlaceService {
             searchPlaceRequest.bufferDistance(), searchPlaceRequest.searchType());
     }
 
+    public List<SearchDetailPlaceResponse> findPlaceDetailByPlaceId(Long placeId, Long userId) {
+        return placeRepository.findPlaceDetailByPlaceId(placeId, userId);
+    }
 }

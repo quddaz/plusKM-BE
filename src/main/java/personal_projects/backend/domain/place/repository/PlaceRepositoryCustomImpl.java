@@ -3,15 +3,19 @@ package personal_projects.backend.domain.place.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import personal_projects.backend.domain.oauth.util.jwt.JwtProperties;
 import personal_projects.backend.domain.place.domain.Place_type;
 import personal_projects.backend.domain.place.dto.Search_Type;
+import personal_projects.backend.domain.place.dto.response.SearchDetailPlaceResponse;
 import personal_projects.backend.domain.place.dto.response.SearchResultPlaceResponse;
 
 import java.util.List;
 
 import static personal_projects.backend.domain.place.domain.QPlace.place;
+import static personal_projects.backend.domain.bookmark.domain.QBookMark.bookMark;
 
 @RequiredArgsConstructor
 public class PlaceRepositoryCustomImpl implements PlaceRepositoryCustom {
@@ -34,6 +38,7 @@ public class PlaceRepositoryCustomImpl implements PlaceRepositoryCustom {
             .where(builder)
             .fetch();
     }
+
 
     private BooleanBuilder createSearchConditions(BooleanBuilder builder, double x, double y, Search_Type searchType, double bufferDistance) {
         // 킬로미터를 위도/경도 차이로 변환
@@ -61,5 +66,24 @@ public class PlaceRepositoryCustomImpl implements PlaceRepositoryCustom {
         }
 
         return builder;
+    }
+
+    @Override
+    public List<SearchDetailPlaceResponse> findPlaceDetailByPlaceId(Long placeId, Long userId) {
+        return queryFactory.select(Projections.constructor(SearchDetailPlaceResponse.class,
+                place.id,
+                place.name,
+                place.address,
+                place.tel,
+                place.place_type.stringValue(),
+                JPAExpressions.selectOne()
+                    .from(bookMark)
+                    .where(bookMark.place.id.eq(place.id)
+                        .and(bookMark.user.id.eq(userId)))
+                    .exists()
+            ))
+            .from(place)
+            .where(place.id.eq(placeId))
+            .fetch();
     }
 }

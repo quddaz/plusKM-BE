@@ -21,10 +21,6 @@ public class BookMarkService {
     private final UserService userService;
     private final PlaceService placeService;
 
-    public BookMark findById(Long id) {
-        return bookMarkRepository.findById(id).orElseThrow(() -> new BookMarkNotFoundException(BookMarkErrorCode.BOOKMARK_NOT_FOUND));
-    }
-
     @Transactional
     public void checkBookMark(Long placeId, Long userId) {
         User user = userService.findById(userId);
