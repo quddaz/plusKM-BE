@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import personal_projects.backend.domain.medical.domain.Medical;
 
 @Repository
-public interface MedicalRepository extends JpaRepository<Medical, Long> {
+public interface MedicalRepository extends JpaRepository<Medical, Long>, MedicalRepositoryCustom {
 }

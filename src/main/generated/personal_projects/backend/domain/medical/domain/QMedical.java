@@ -24,6 +24,8 @@ public class QMedical extends EntityPathBase<Medical> {
 
     public final personal_projects.backend.global.domain.QBaseTimeEntity _super = new personal_projects.backend.global.domain.QBaseTimeEntity(this);
 
+    public final StringPath content = createString("content");
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdDate = _super.createdDate;
 
@@ -35,8 +37,6 @@ public class QMedical extends EntityPathBase<Medical> {
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedDate = _super.modifiedDate;
-
-    public final StringPath name = createString("name");
 
     public final personal_projects.backend.domain.place.domain.QPlace place;
 

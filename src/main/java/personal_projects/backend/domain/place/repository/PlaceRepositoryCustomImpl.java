@@ -98,7 +98,7 @@ public class PlaceRepositoryCustomImpl implements PlaceRepositoryCustom {
                 place.place_type.stringValue()
             ))
             .from(place)
-            .join(bookMark.place, place)
+            .leftJoin(place.bookMarks, bookMark)
             .where(bookMark.user.id.eq(userId))
             .fetch();
     }

@@ -26,7 +26,7 @@ public class PlaceController {
     }
     */
 
-    @PostMapping("/mongo")
+    @PostMapping("/search")
     public ResponseEntity<?> getPlacesWithinBufferMongo(
         @RequestBody SearchPlaceRequest searchPlaceRequest) {
         return ResponseEntity
