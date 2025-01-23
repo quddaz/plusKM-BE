@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.user.domain.User;
 
+import java.awt.print.Book;
+
 @Entity
 @Builder
 @Getter
@@ -25,4 +27,11 @@ public class BookMark {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public static BookMark of(Place place, User user) {
+        return BookMark.builder()
+            .place(place)
+            .user(user)
+            .build();
+    }
 }
