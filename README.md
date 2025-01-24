@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=DDBCFF&height=250&section=header&text=🗺+/Km&fontSize=90&fontAlign=70&fontAlignY=40&fontColor=2F4F4F&animation=fadeIn" style="width: 100%; height: auto;" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=DDBCFF&height=250&section=header&text=🗺"+"/Km&fontSize=90&fontAlign=70&fontAlignY=40&fontColor=2F4F4F&animation=fadeIn" style="width: 100%; height: auto;" />
 </p>
 
 # 개인프로젝트 +/Km
