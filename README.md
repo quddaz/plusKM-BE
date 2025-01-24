@@ -20,15 +20,15 @@
 
 > 현재 위치 혹은 주소를 입력해서 주변 의료 기관을 검색할 수 있어요
 
-<img src="https://github.com/user-attachments/assets/9f9cc293-8c50-4b5f-bb5c-734d51cc09f8" alt="이미지 설명" width="400">
+<img src="https://github.com/user-attachments/assets/9f9cc293-8c50-4b5f-bb5c-734d51cc09f8" alt="이미지 설명" width="200">
 
 > 찾은 의료 기관의 진료 기록을 검색해 가격을 확인해보세요
 
-<img src="https://github.com/user-attachments/assets/dc3499af-0351-4d4a-87b3-2537e175cb00" alt="이미지 설명" width="400">
+<img src="https://github.com/user-attachments/assets/dc3499af-0351-4d4a-87b3-2537e175cb00" alt="이미지 설명" width="200">
 
 > 맘에 드는 의료 기관을 구독해보세요
 
-<img src="https://github.com/user-attachments/assets/8e910da4-51a6-46a8-9720-5c558f259adc" alt="이미지 설명" width="400">
+<img src="https://github.com/user-attachments/assets/8e910da4-51a6-46a8-9720-5c558f259adc" alt="이미지 설명" width="200">
 
 ### 프로젝트 구성
 
