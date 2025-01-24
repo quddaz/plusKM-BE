@@ -14,9 +14,8 @@
 
 ![React](https://go-skill-icons.vercel.app/api/icons?i=java,spring,hibernate,mysql,mongodb)
 
-### 주요 기능
 
-# 개인프로젝트 +/Km -PlusKm
+## 개인프로젝트 +/Km -PlusKm
 ![Image](https://github.com/user-attachments/assets/af9d18f3-4581-4134-a99a-69df74860619)
 
 > 현재 위치 혹은 주소를 입력해서 주변 의료 기관을 검색할 수 있어요
