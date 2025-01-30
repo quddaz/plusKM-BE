@@ -1,4 +1,4 @@
-package personal_projects.backend.domain.place.domain;
+package personal_projects.backend.domain.place.domain.enumType;
 
 public enum Place_type {
     한의원,

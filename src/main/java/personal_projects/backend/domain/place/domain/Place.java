@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
 import personal_projects.backend.domain.bookmark.domain.BookMark;
 import personal_projects.backend.domain.medical.domain.Medical;
+import personal_projects.backend.domain.place.domain.enumType.Place_type;
 
 import java.util.List;
 

@@ -10,7 +10,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import personal_projects.backend.domain.place.domain.Place;
-import personal_projects.backend.domain.place.domain.Place_type;
+import personal_projects.backend.domain.place.domain.enumType.Place_type;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
 import personal_projects.backend.global.util.DummyDataInit;
 

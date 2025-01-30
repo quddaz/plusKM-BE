@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import personal_projects.backend.domain.place.domain.Place_type;
+import personal_projects.backend.domain.place.domain.enumType.Place_type;
 import personal_projects.backend.domain.place.domain.mongo.MongoPlace;
 import personal_projects.backend.domain.place.dto.Search_Type;
 import personal_projects.backend.domain.place.dto.response.SearchResultPlaceResponse;
