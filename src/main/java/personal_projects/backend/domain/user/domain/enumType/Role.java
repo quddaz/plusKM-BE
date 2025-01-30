@@ -1,4 +1,4 @@
-package personal_projects.backend.domain.user.domain;
+package personal_projects.backend.domain.user.domain.enumType;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import personal_projects.backend.domain.medical.dto.request.MedicalDTO;
+import personal_projects.backend.domain.medical.domain.enumType.Medical_department;
 import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.user.domain.User;
 import personal_projects.backend.global.domain.BaseTimeEntity;

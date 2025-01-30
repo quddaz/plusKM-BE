@@ -1,4 +1,4 @@
-package personal_projects.backend.domain.medical.domain;
+package personal_projects.backend.domain.medical.domain.enumType;
 
 public enum Medical_department {
     내과,

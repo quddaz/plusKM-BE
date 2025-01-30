@@ -3,7 +3,7 @@ package personal_projects.backend.domain.medical.dto.request;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Builder;
 import personal_projects.backend.domain.medical.domain.Medical;
-import personal_projects.backend.domain.medical.domain.Medical_department;
+import personal_projects.backend.domain.medical.domain.enumType.Medical_department;
 import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.user.domain.User;
 

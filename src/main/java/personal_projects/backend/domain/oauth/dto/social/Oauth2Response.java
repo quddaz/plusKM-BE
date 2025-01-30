@@ -1,6 +1,6 @@
 package personal_projects.backend.domain.oauth.dto.social;
 
-import personal_projects.backend.domain.user.domain.Oauth_type;
+import personal_projects.backend.domain.user.domain.enumType.Oauth_type;
 
 public interface Oauth2Response {
     //제공자 (Ex. naver, google, ...)

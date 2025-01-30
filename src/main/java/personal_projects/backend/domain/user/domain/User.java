@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import personal_projects.backend.domain.oauth.dto.social.Oauth2Response;
+import personal_projects.backend.domain.user.domain.enumType.Oauth_type;
+import personal_projects.backend.domain.user.domain.enumType.Role;
 
 import java.util.List;
 

@@ -4,7 +4,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import personal_projects.backend.domain.medical.domain.Medical_department;
+import personal_projects.backend.domain.medical.domain.enumType.Medical_department;
 import personal_projects.backend.domain.medical.dto.response.MedicalPageResponse;
 
 import java.util.List;
