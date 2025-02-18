@@ -8,7 +8,6 @@ import com.querydsl.core.types.PathMetadata;
 import javax.annotation.processing.Generated;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.PathInits;
-import personal_projects.backend.domain.place.domain.enumType.Place_type;
 
 
 /**
@@ -33,7 +32,7 @@ public class QPlace extends EntityPathBase<Place> {
 
     public final StringPath name = createString("name");
 
-    public final EnumPath<Place_type> place_type = createEnum("place_type", Place_type.class);
+    public final EnumPath<personal_projects.backend.domain.place.domain.enumType.Place_type> place_type = createEnum("place_type", personal_projects.backend.domain.place.domain.enumType.Place_type.class);
 
     public final StringPath tel = createString("tel");
 

@@ -1,6 +1,7 @@
 package personal_projects.backend.domain.place.repository.init;
 
 import com.opencsv.CSVReader;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
@@ -12,6 +13,7 @@ import org.springframework.core.annotation.Order;
 import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.place.domain.enumType.Place_type;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
+import personal_projects.backend.domain.place.repository.bulk.PlaceBulkRepository;
 import personal_projects.backend.global.util.DummyDataInit;
 
 import java.io.InputStream;
@@ -27,7 +29,7 @@ import java.util.stream.Collectors;
 public class PlaceInitializer implements ApplicationRunner {
     private final PlaceRepository placeRepository;
     private final GeometryFactory geometryFactory;
-
+    private final PlaceBulkRepository placeBulkRepository;
     @Override
     public void run(ApplicationArguments args) throws Exception {
         if (placeRepository.count() > 0) {
@@ -92,8 +94,9 @@ public class PlaceInitializer implements ApplicationRunner {
             throw new RuntimeException("CSV 파일을 처리하는 중 오류 발생", e);
         }
     }
-
-    private void updateDatabase(Map<String, Place> csvDataMap) {
+    @Transactional
+    protected void updateDatabase(Map<String, Place> csvDataMap) {
+        long start = System.currentTimeMillis();
         // 기존 데이터 조회
         List<Place> existingPlaces = placeRepository.findAll();
 
@@ -110,6 +113,17 @@ public class PlaceInitializer implements ApplicationRunner {
             .map(Map.Entry::getValue)
             .collect(Collectors.toList());
 
+        // 삭제할 데이터 필터링
+        List<Long> placeIdsToDelete = existingPlaces.stream()
+            .filter(place -> !csvDataMap.containsKey(generateUniqueKey(place.getName(), place.getAddress())))
+            .map(Place::getId)
+            .collect(Collectors.toList());
+
+        // ✅ 벌크 INSERT & DELETE 수행
+        placeBulkRepository.batchInsertPlaces(placesToSave);
+        placeBulkRepository.batchDeletePlaces(placeIdsToDelete);
+
+        /* // jpa 연산
         // 삭제 대상 찾기
         List<Place> placesToDelete = existingPlaces.stream()
             .filter(place -> !csvDataMap.containsKey(generateUniqueKey(place.getName(), place.getAddress())))
@@ -117,8 +131,10 @@ public class PlaceInitializer implements ApplicationRunner {
 
         placeRepository.saveAll(placesToSave);
         placeRepository.deleteAll(placesToDelete);
+        */
 
-        log.info("[Place] 데이터 동기화 완료 - 추가/수정: {}, 삭제: {}", placesToSave.size(), placesToDelete.size());
+        long end = System.currentTimeMillis();
+        log.info("[Place] 데이터 동기화 완료 - 추가/수정: {}, 삭제: {}, 시간: {}", placesToSave.size(), placeIdsToDelete.size(), end - start);
     }
 
     private boolean isUpdated(String key, Place newPlace, Map<String, Place> existingPlacesMap) {

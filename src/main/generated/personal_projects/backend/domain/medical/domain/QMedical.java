@@ -8,7 +8,6 @@ import com.querydsl.core.types.PathMetadata;
 import javax.annotation.processing.Generated;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.PathInits;
-import personal_projects.backend.domain.medical.domain.enumType.Medical_department;
 
 
 /**
@@ -30,7 +29,7 @@ public class QMedical extends EntityPathBase<Medical> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdDate = _super.createdDate;
 
-    public final EnumPath<Medical_department> department = createEnum("department", Medical_department.class);
+    public final EnumPath<personal_projects.backend.domain.medical.domain.enumType.Medical_department> department = createEnum("department", personal_projects.backend.domain.medical.domain.enumType.Medical_department.class);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
