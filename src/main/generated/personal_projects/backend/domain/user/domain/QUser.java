@@ -7,8 +7,6 @@ import com.querydsl.core.types.dsl.*;
 import com.querydsl.core.types.PathMetadata;
 import javax.annotation.processing.Generated;
 import com.querydsl.core.types.Path;
-import personal_projects.backend.domain.user.domain.enumType.Oauth_type;
-import personal_projects.backend.domain.user.domain.enumType.Role;
 
 
 /**
@@ -27,9 +25,9 @@ public class QUser extends EntityPathBase<User> {
 
     public final StringPath name = createString("name");
 
-    public final EnumPath<Oauth_type> oauth_type = createEnum("oauth_type", Oauth_type.class);
+    public final EnumPath<personal_projects.backend.domain.user.domain.enumType.Oauth_type> oauth_type = createEnum("oauth_type", personal_projects.backend.domain.user.domain.enumType.Oauth_type.class);
 
-    public final EnumPath<Role> role = createEnum("role", Role.class);
+    public final EnumPath<personal_projects.backend.domain.user.domain.enumType.Role> role = createEnum("role", personal_projects.backend.domain.user.domain.enumType.Role.class);
 
     public final StringPath socialId = createString("socialId");
 
