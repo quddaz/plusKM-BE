@@ -16,5 +16,6 @@ public enum Medical_department {
     영상의학과,
     치과,
     한의원,
+    INTERNAL_MEDICINE,
     ;
 }

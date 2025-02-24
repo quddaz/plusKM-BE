@@ -27,12 +27,12 @@ public class PlaceService {
         return placeRepository.findById(id).orElseThrow(() -> new PlaceNotFoundException(PlaceErrorCode.PLACE_NOT_FOUND));
     }
 
-    /* MySQL을 사용하는 구버전
+    // MySQL을 사용하는 구버전
     public List<SearchResultPlaceResponse> getPlacesWithinBuffer(SearchPlaceRequest searchPlaceRequest) {
         return placeRepository.findPlacesWithinBuffer(searchPlaceRequest.longitude(), searchPlaceRequest.latitude(),
             searchPlaceRequest.bufferDistance(), searchPlaceRequest.searchType());
     }
-     */
+
 
     public SearchDetailPlaceResponse findPlaceDetailByPlaceId(Long placeId, Long userId) {
         return placeRepository.findPlaceDetailByPlaceId(placeId, userId);
