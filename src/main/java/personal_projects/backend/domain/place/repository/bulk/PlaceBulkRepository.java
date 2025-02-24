@@ -14,7 +14,7 @@ import java.util.List;
 public class PlaceBulkRepository {
     private final JdbcTemplate jdbcTemplate;
     private static final int BULK_COUNT = 1000;
-    // ✅ 벌크 INSERT
+    // 벌크 INSERT
     public void batchInsertPlaces(List<Place> places) {
         if (places.isEmpty()) return;
 
@@ -32,7 +32,7 @@ public class PlaceBulkRepository {
         log.info("[PlaceBulkRepository] {} 개의 Place 데이터 벌크 삽입 완료", places.size());
     }
 
-    // ✅ 벌크 DELETE
+    // 벌크 DELETE
     public void batchDeletePlaces(List<Long> placeIds) {
         if (placeIds.isEmpty()) return;
 
