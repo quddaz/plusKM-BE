@@ -43,8 +43,6 @@ dependencies {
 	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
 	//csv 파일
 	implementation 'com.opencsv:opencsv:5.5.2'
-	// Redis
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	//MySQL 공간 좌표
 	implementation 'org.locationtech.jts:jts-core:1.20.0'
 	//swagger
