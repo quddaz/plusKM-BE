@@ -21,9 +21,8 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
-        docker build -t quddaz/myapp:latest -f src/main/resources/Dockerfile .
-        docker push quddaz/myapp:latest
-
+          docker build -t quddaz/myapp:latest .
+          docker push quddaz/myapp:latest
     - name: Setup SSH agent
       uses: webfactory/ssh-agent@v0.5.4
       with:
