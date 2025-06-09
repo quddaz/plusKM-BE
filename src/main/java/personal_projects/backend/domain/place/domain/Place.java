@@ -35,7 +35,7 @@ public class Place {
 
     private String tel;
 
-    @Column(nullable = false, columnDefinition = "POINT SRID 4326")
+    @Column(columnDefinition = "POINT")
     private Point coordinate;
 
     @OneToMany(mappedBy = "place", orphanRemoval = true, cascade = CascadeType.REMOVE)

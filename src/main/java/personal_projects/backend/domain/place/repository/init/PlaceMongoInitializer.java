@@ -27,6 +27,7 @@ public class PlaceMongoInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        log.info("PlaceMongoInitializer 실행 시작");
         // 기존 데이터 삭제
         mongoTemplate.getCollection("place").deleteMany(new Document());
 
@@ -39,7 +40,10 @@ public class PlaceMongoInitializer implements ApplicationRunner {
                 .placeType(place.getPlace_type().name())
                 .address(place.getAddress())
                 .tel(place.getTel())
-                .coordinate(new GeoJsonPoint(place.getCoordinate().getX(), place.getCoordinate().getY()))
+                .coordinate(new GeoJsonPoint(
+                    place.getCoordinate().getX(),  // longitude
+                    place.getCoordinate().getY()   // latitude
+                ))
                 .build())
             .toList();
 

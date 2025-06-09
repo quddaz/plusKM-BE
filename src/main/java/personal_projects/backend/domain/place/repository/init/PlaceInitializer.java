@@ -104,7 +104,8 @@ public class PlaceInitializer implements ApplicationRunner {
         Map<String, Place> existingPlacesMap = existingPlaces.stream()
             .collect(Collectors.toMap(
                 place -> generateUniqueKey(place.getName(), place.getAddress()),
-                place -> place
+                place -> place,
+                (existing, duplicate) -> duplicate // 중복된 키가 있을 경우 최신 데이터를 유지
             ));
 
         // 추가/수정 대상 찾기
