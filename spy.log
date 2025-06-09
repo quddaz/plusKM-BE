@@ -1,2 +1,0 @@
-1737022019852|56|statement|connection 3|url jdbc:mysql://localhost:3306/unip?serverTimezone=Asia/Seoul|select p1_0.id from place p1_0 where p1_0.tel=? limit ?|select p1_0.id from place p1_0 where p1_0.tel='062-956-0365' limit 1
-1749469073654|26203|statement|connection 4|url jdbc:mariadb://svc.sel5.cloudtype.app:31472/unip?user=root&password=***&serverTimezone=Asia/Seoul|select p1_0.id,p1_0.address,p1_0.coordinate,p1_0.name,p1_0.place_type,p1_0.tel from place p1_0|select p1_0.id,p1_0.address,p1_0.coordinate,p1_0.name,p1_0.place_type,p1_0.tel from place p1_0
