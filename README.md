@@ -14,6 +14,10 @@
 
 ![React](https://go-skill-icons.vercel.app/api/icons?i=java,spring,hibernate,mysql,mongodb)
 
+트러블슈팅
+- [[+/KM]MySQL에서 공간 데이터 최적화하기](https://quddnd.tistory.com/284)
+- [[+/KM]공간 데이터 최적화를 위한 MongoDB 도입](https://quddnd.tistory.com/286)
+- [[+/KM]JDBC Batch로 CSV 데이터 저장 최적화](https://quddnd.tistory.com/287)
 
 ## 개인프로젝트 +/Km -PlusKm
 ![Image](https://github.com/user-attachments/assets/af9d18f3-4581-4134-a99a-69df74860619)
