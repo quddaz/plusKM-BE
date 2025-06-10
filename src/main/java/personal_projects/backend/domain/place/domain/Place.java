@@ -18,9 +18,14 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "place", indexes = {
-    @Index(name = "idx_place_coordinate", columnList = "coordinate")
-})
+@Table(name = "place",
+    indexes = {
+        @Index(name = "idx_place_coordinate", columnList = "coordinate")
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_place_name_address", columnNames = {"name", "address"})
+    }
+)
 public class Place {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
@@ -34,6 +39,8 @@ public class Place {
     private String address;
 
     private String tel;
+
+    private boolean active;
 
     @Column(columnDefinition = "POINT")
     private Point coordinate;
@@ -51,5 +58,6 @@ public class Place {
         this.address = address;
         this.tel = tel;
         this.coordinate = coordinate;
+        this.active = true; // 기본값으로 활성화 상태 설정
     }
 }

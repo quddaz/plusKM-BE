@@ -31,7 +31,7 @@ dependencies {
 	//hibernate spatial
 	implementation group: 'org.hibernate', name: 'hibernate-spatial', version: '6.5.2.Final'
 	// mysql
-	implementation 'mysql:mysql-connector-java:8.0.28'
+	implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.26'
 	// lombok
 	annotationProcessor 'org.projectlombok:lombok'
 	// junit
@@ -43,8 +43,6 @@ dependencies {
 	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
 	//csv 파일
 	implementation 'com.opencsv:opencsv:5.5.2'
-	// Redis
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	//MySQL 공간 좌표
 	implementation 'org.locationtech.jts:jts-core:1.20.0'
 	//swagger
@@ -63,7 +61,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	// Spring Boot Starter Data MongoDB
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-	implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.1'
+
+	// mariadb
+	implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.3'
 }
 
 //Querydsl 설정

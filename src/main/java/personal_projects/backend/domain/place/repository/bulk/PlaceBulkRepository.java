@@ -17,21 +17,28 @@ public class PlaceBulkRepository {
     // 벌크 INSERT
     public void batchInsertPlaces(List<Place> places) {
         if (places.isEmpty()) return;
-
-        String sql = "INSERT INTO place (name, place_type, address, tel, coordinate) " +
-            "VALUES (?, ?, ?, ?, ST_GeomFromText(?, 4326))";
+        String sql = "INSERT INTO place (name, place_type, address, tel, active, coordinate) " +
+            "VALUES (?, ?, ?, ?, ?, ST_GeomFromText(?, 4326)) " +
+            "ON DUPLICATE KEY UPDATE " +
+            "place_type = VALUES(place_type), " +
+            "address = VALUES(address), " +
+            "tel = VALUES(tel), " +
+            "active = VALUES(active), " +
+            "coordinate = VALUES(coordinate)";
 
         jdbcTemplate.batchUpdate(sql, places, BULK_COUNT, (ps, place) -> {
             ps.setString(1, place.getName());
             ps.setString(2, place.getPlace_type().name());
             ps.setString(3, place.getAddress());
             ps.setString(4, place.getTel());
-            ps.setString(5, String.format("POINT(%f %f)", place.getCoordinate().getY(), place.getCoordinate().getX()));
+            ps.setBoolean(5, place.isActive());
+            ps.setString(6, String.format("POINT(%f %f)", place.getCoordinate().getX(), place.getCoordinate().getY()));
         });
+
 
         log.info("[PlaceBulkRepository] {} 개의 Place 데이터 벌크 삽입 완료", places.size());
     }
-
+/*
     // 벌크 DELETE
     public void batchDeletePlaces(List<Long> placeIds) {
         if (placeIds.isEmpty()) return;
@@ -42,4 +49,5 @@ public class PlaceBulkRepository {
 
         log.info("[PlaceBulkRepository] {} 개의 Place 데이터 벌크 삭제 완료", placeIds.size());
     }
+ */
 }

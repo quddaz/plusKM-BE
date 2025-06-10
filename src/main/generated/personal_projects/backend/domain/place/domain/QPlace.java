@@ -20,6 +20,8 @@ public class QPlace extends EntityPathBase<Place> {
 
     public static final QPlace place = new QPlace("place");
 
+    public final BooleanPath active = createBoolean("active");
+
     public final StringPath address = createString("address");
 
     public final ListPath<personal_projects.backend.domain.bookmark.domain.BookMark, personal_projects.backend.domain.bookmark.domain.QBookMark> bookMarks = this.<personal_projects.backend.domain.bookmark.domain.BookMark, personal_projects.backend.domain.bookmark.domain.QBookMark>createList("bookMarks", personal_projects.backend.domain.bookmark.domain.BookMark.class, personal_projects.backend.domain.bookmark.domain.QBookMark.class, PathInits.DIRECT2);
