@@ -97,45 +97,46 @@ public class PlaceInitializer implements ApplicationRunner {
     @Transactional
     protected void updateDatabase(Map<String, Place> csvDataMap) {
         long start = System.currentTimeMillis();
-        // 기존 데이터 조회
+
         List<Place> existingPlaces = placeRepository.findAll();
 
-        // 기존 데이터 맵 생성
         Map<String, Place> existingPlacesMap = existingPlaces.stream()
             .collect(Collectors.toMap(
                 place -> generateUniqueKey(place.getName(), place.getAddress()),
                 place -> place,
-                (existing, duplicate) -> duplicate // 중복된 키가 있을 경우 최신 데이터를 유지
+                (existing, duplicate) -> duplicate
             ));
 
-        // 추가/수정 대상 찾기
         List<Place> placesToSave = csvDataMap.entrySet().stream()
             .filter(entry -> !existingPlacesMap.containsKey(entry.getKey()) || isUpdated(entry.getKey(), entry.getValue(), existingPlacesMap))
             .map(Map.Entry::getValue)
             .collect(Collectors.toList());
 
-        // 삭제할 데이터 필터링
         List<Long> placeIdsToDelete = existingPlaces.stream()
             .filter(place -> !csvDataMap.containsKey(generateUniqueKey(place.getName(), place.getAddress())))
             .map(Place::getId)
             .collect(Collectors.toList());
 
-        // ✅ 벌크 INSERT & DELETE 수행
-        placeBulkRepository.batchInsertPlaces(placesToSave);
-        placeBulkRepository.batchDeletePlaces(placeIdsToDelete);
+        // ✅ 1000개씩 나눠서 처리
+        int BATCH_SIZE = 1000;
+        for (List<Place> batch : partitionList(placesToSave, BATCH_SIZE)) {
+            placeBulkRepository.batchInsertPlaces(batch);
+        }
 
-        /* // jpa 연산
-        // 삭제 대상 찾기
-        List<Place> placesToDelete = existingPlaces.stream()
-            .filter(place -> !csvDataMap.containsKey(generateUniqueKey(place.getName(), place.getAddress())))
-            .collect(Collectors.toList());
-
-        placeRepository.saveAll(placesToSave);
-        placeRepository.deleteAll(placesToDelete);
-        */
+        for (List<Long> batch : partitionList(placeIdsToDelete, BATCH_SIZE)) {
+            placeBulkRepository.batchDeletePlaces(batch);
+        }
 
         long end = System.currentTimeMillis();
-        log.info("[Place] 데이터 동기화 완료 - 추가/수정: {}, 삭제: {}, 시간: {}", placesToSave.size(), placeIdsToDelete.size(), end - start);
+        log.info("[Place] 데이터 동기화 완료 - 추가/수정: {}, 삭제: {}, 시간: {}ms",
+            placesToSave.size(), placeIdsToDelete.size(), end - start);
+    }
+    private <T> List<List<T>> partitionList(List<T> list, int batchSize) {
+        List<List<T>> partitions = new ArrayList<>();
+        for (int i = 0; i < list.size(); i += batchSize) {
+            partitions.add(list.subList(i, Math.min(i + batchSize, list.size())));
+        }
+        return partitions;
     }
 
     private boolean isUpdated(String key, Place newPlace, Map<String, Place> existingPlacesMap) {
