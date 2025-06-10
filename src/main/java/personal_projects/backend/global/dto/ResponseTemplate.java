@@ -30,6 +30,7 @@ public record ResponseTemplate<T>(
         .message("가진 권한으로는 실행할 수 없는 기능입니다.")
         .results(Collections.EMPTY_MAP)
         .build();
+
     public static <T> ResponseTemplate<Object> from(T dto) {
         return ResponseTemplate.builder()
             .isSuccess(true)
@@ -42,7 +43,7 @@ public record ResponseTemplate<T>(
         return ResponseTemplate.builder()
             .isSuccess(false)
             .code("Error")
-            .message("request Fail")
+            .message(dto.toString())
             .results(null)
             .build();
     }

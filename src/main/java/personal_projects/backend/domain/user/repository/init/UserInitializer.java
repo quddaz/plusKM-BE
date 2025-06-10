@@ -27,7 +27,13 @@ public class UserInitializer implements ApplicationRunner {
             log.info("[User] 더미 데이터 존재");
         } else {
             List<User> users = new ArrayList<>();
-
+            users.add(User.builder()
+                .email("playgrounm" + "@gmail.com")
+                .name("김병웅")
+                .oauth_type(Oauth_type.GOOGLE)
+                .socialId("0")
+                .role(Role.ADMIN)
+                .build());
             for(int i = 1; i <= 3; i++){
                 users.add(User.builder()
                     .email("user"+ i + "@gmail.com")

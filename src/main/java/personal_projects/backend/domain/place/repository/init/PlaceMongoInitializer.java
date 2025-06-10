@@ -2,34 +2,28 @@ package personal_projects.backend.domain.place.repository.init;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.core.annotation.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.place.domain.mongo.MongoPlace;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
-import personal_projects.backend.global.util.DummyDataInit;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 @Slf4j
 @RequiredArgsConstructor
-@Component
-@Order(2)
-@DummyDataInit
-public class PlaceMongoInitializer implements ApplicationRunner {
+@Service
+public class PlaceMongoInitializer {
 
     private final MongoTemplate mongoTemplate;
     private final PlaceRepository placeRepository;
 
     private static final int BATCH_SIZE = 1000;
 
-    @Override
-    public void run(ApplicationArguments args) throws Exception {
+
+    public void updatePlaceDataFromCsv() throws Exception {
         log.info("MongoDB 갱신 실행 시작");
 
         mongoTemplate.getCollection("place").deleteMany(new org.bson.Document());
@@ -55,14 +49,12 @@ public class PlaceMongoInitializer implements ApplicationRunner {
 
                 if (currentBatch.size() >= BATCH_SIZE) {
                     mongoTemplate.insertAll(currentBatch);
-                    log.info("MongoDB에 {}개의 Place 데이터 배치 삽입 완료.", currentBatch.size());
                     currentBatch.clear();
                 }
             });
 
             if (!currentBatch.isEmpty()) {
                 mongoTemplate.insertAll(currentBatch);
-                log.info("MongoDB에 마지막 {}개의 Place 데이터 배치 삽입 완료.", currentBatch.size());
             }
 
             log.info("MongoDB 갱신 실행 완료. Place 데이터 동기화 과정 종료.");

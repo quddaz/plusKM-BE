@@ -7,15 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Service;
 import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.place.domain.enumType.Place_type;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
 import personal_projects.backend.domain.place.repository.bulk.PlaceBulkRepository;
-import personal_projects.backend.global.util.DummyDataInit;
-
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -24,9 +20,8 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
-@Order(1)
-@DummyDataInit
-public class PlaceInitializer implements ApplicationRunner {
+@Service
+public class PlaceInitializer{
 
     private final PlaceRepository placeRepository;
     private final GeometryFactory geometryFactory;
@@ -34,9 +29,7 @@ public class PlaceInitializer implements ApplicationRunner {
 
     private static final int BATCH_SIZE = 1000;
 
-    @Override
-    @Transactional
-    public void run(ApplicationArguments args) throws Exception {
+    public void updatePlaceDataFromCsv() throws Exception {
 
         // 1. 기존 모든 Place 데이터를 비활성화합니다.
         placeRepository.deactivateAll();
@@ -125,7 +118,6 @@ public class PlaceInitializer implements ApplicationRunner {
         }
     }
 
-    @Transactional
     protected void updateDatabasePartial(Map<String, Place> csvDataMap) {
         if (csvDataMap.isEmpty()) {
             return;
