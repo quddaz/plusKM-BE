@@ -34,9 +34,6 @@ public class PlaceBulkRepository {
             ps.setBoolean(5, place.isActive());
             ps.setString(6, String.format("POINT(%f %f)", place.getCoordinate().getX(), place.getCoordinate().getY()));
         });
-
-
-        log.info("[PlaceBulkRepository] {} 개의 Place 데이터 벌크 삽입 완료", places.size());
     }
 /*
     // 벌크 DELETE

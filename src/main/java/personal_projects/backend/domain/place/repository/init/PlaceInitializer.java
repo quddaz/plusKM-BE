@@ -37,11 +37,6 @@ public class PlaceInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) throws Exception {
-        if (placeRepository.count() > 0) {
-            log.info("[Place] 기존 데이터 갱신 시작");
-        } else {
-            log.info("[Place] 더미 데이터 삽입 시작");
-        }
 
         // 1. 기존 모든 Place 데이터를 비활성화합니다.
         placeRepository.deactivateAll();
@@ -53,7 +48,7 @@ public class PlaceInitializer implements ApplicationRunner {
         //    모든 Place 데이터를 삭제합니다.
         placeRepository.deleteInactivePlaces();
 
-        log.info("[Place] 더미 데이터 삽입/갱신 완료");
+        log.info("[Place] 공공데이터 삽입/갱신 완료");
     }
 
     private void importPlaceStreaming() {
@@ -155,7 +150,6 @@ public class PlaceInitializer implements ApplicationRunner {
         if (!toSave.isEmpty()) {
             placeBulkRepository.batchInsertPlaces(toSave);
         }
-        log.info("[Place] 배치 업데이트 - 처리건수: {}", toSave.size());
     }
 
     // 기존 Place와 비교하여 업데이트가 필요한지 확인합니다.
