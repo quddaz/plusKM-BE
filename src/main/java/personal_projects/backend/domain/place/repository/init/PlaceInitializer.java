@@ -27,34 +27,55 @@ import java.util.stream.Collectors;
 @Order(1)
 @DummyDataInit
 public class PlaceInitializer implements ApplicationRunner {
+
     private final PlaceRepository placeRepository;
     private final GeometryFactory geometryFactory;
     private final PlaceBulkRepository placeBulkRepository;
+
+    private static final int BATCH_SIZE = 1000;
+
     @Override
+    @Transactional
     public void run(ApplicationArguments args) throws Exception {
         if (placeRepository.count() > 0) {
             log.info("[Place] 기존 데이터 갱신 시작");
         } else {
             log.info("[Place] 더미 데이터 삽입 시작");
         }
-        importPlace();
+
+        // 1. 기존 모든 Place 데이터를 비활성화합니다.
+        placeRepository.deactivateAll();
+
+        // 2. CSV 데이터를 스트리밍 방식으로 읽어와 DB에 삽입/업데이트합니다.
+        importPlaceStreaming();
+
+        // 3. `importPlaceStreaming()`을 통해 갱신되지 않아 여전히 `active=false` 상태인
+        //    모든 Place 데이터를 삭제합니다.
+        placeRepository.deleteInactivePlaces();
+
+        log.info("[Place] 더미 데이터 삽입/갱신 완료");
     }
 
-    private void importPlace() {
+    private void importPlaceStreaming() {
         Map<String, Place> csvDataMap = new HashMap<>();
+
+        // 병원 및 약국 CSV 파일 데이터를 동기화합니다.
         syncPlaceData("data/병원정보.csv", 1, 28, 29, 3, 10, 11, csvDataMap);
         syncPlaceData("data/약국정보.csv", 1, 13, 14, 3, 10, 11, csvDataMap);
-        updateDatabase(csvDataMap);
+
+        if (!csvDataMap.isEmpty()) {
+            updateDatabasePartial(csvDataMap);
+        }
     }
 
     private void syncPlaceData(String filePath, int nameIdx, int longitudeIdx, int latitudeIdx, int placeTypeIdx,
                                int addressIdx, int telIdx, Map<String, Place> csvDataMap) {
         try (
-             InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath);
-             InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-             CSVReader csvReader = new CSVReader(reader)) {
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath);
+            InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+            CSVReader csvReader = new CSVReader(reader)) {
 
-            csvReader.readNext(); // 첫 번째 줄 헤더 건너뜀
+            csvReader.readNext(); // 헤더를 건너뜁니다.
 
             String[] nextLine;
             while ((nextLine = csvReader.readNext()) != null) {
@@ -63,89 +84,85 @@ public class PlaceInitializer implements ApplicationRunner {
                 String address = nextLine[addressIdx];
                 String tel = nextLine[telIdx];
 
-                Double longitude = null;
-                Double latitude = null;
+                Double longitude;
+                Double latitude;
 
                 try {
                     longitude = Double.parseDouble(nextLine[longitudeIdx]);
                     latitude = Double.parseDouble(nextLine[latitudeIdx]);
                 } catch (NumberFormatException e) {
-                    continue; // 좌표가 없으면 건너뜀
-                }
-
-                String uniqueKey = generateUniqueKey(name, address); // 유니크 키 생성
-                if (csvDataMap.containsKey(uniqueKey)) {
-                    log.warn("중복 데이터 발견 - 유니크 키: {}", uniqueKey);
                     continue;
                 }
-                Place place = Place.builder()
-                    .name(name)
-                    .place_type(Place_type.valueOf(placeTypeStr))
-                    .address(address)
-                    .tel(tel)
-                    .coordinate(createPoint(latitude, longitude))
-                    .build();
 
-                csvDataMap.put(uniqueKey, place);
+                String uniqueKey = generateUniqueKey(name, address);
+                if (csvDataMap.containsKey(uniqueKey)) {
+                    continue;
+                }
+
+                if (placeTypeStr != null && !placeTypeStr.trim().isEmpty()) {
+                    Place place = Place.builder()
+                        .name(name)
+                        .place_type(Place_type.valueOf(placeTypeStr))
+                        .address(address)
+                        .tel(tel)
+                        .active(true)
+                        .coordinate(createPoint(latitude, longitude))
+                        .build();
+
+                    csvDataMap.put(uniqueKey, place);
+                } else {
+                    continue;
+                }
+
+
+                // BATCH_SIZE만큼 데이터가 쌓이면 부분적으로 DB에 반영하고 맵을 비웁니다.
+                if (csvDataMap.size() >= BATCH_SIZE) {
+                    updateDatabasePartial(csvDataMap);
+                    csvDataMap.clear();
+                }
             }
 
         } catch (Exception e) {
-            log.error("CSV 파일을 처리하는 중 오류 발생", e);
-            throw new RuntimeException("CSV 파일을 처리하는 중 오류 발생", e);
+            log.error("CSV 파일을 처리하는 중 오류 발생: {}", filePath, e);
+            throw new RuntimeException("CSV 파일 처리 중 오류 발생", e);
+        } finally {
+            csvDataMap.clear();
         }
     }
-    @Transactional
-    protected void updateDatabase(Map<String, Place> csvDataMap) {
-        long start = System.currentTimeMillis();
-        // 기존 데이터 조회
-        List<Place> existingPlaces = placeRepository.findAll();
 
-        // 기존 데이터 맵 생성
-        Map<String, Place> existingPlacesMap = existingPlaces.stream()
+    @Transactional
+    protected void updateDatabasePartial(Map<String, Place> csvDataMap) {
+        if (csvDataMap.isEmpty()) {
+            return;
+        }
+
+        List<String> keys = new ArrayList<>(csvDataMap.keySet());
+        // 고유 키(이름 + 주소 조합)로 기존 Place 데이터를 조회합니다.
+        List<Place> existingPlaces = placeRepository.findAllByUniqueKeyIn(keys);
+
+        Map<String, Place> existingMap = existingPlaces.stream()
             .collect(Collectors.toMap(
-                place -> generateUniqueKey(place.getName(), place.getAddress()),
-                place -> place,
-                (existing, duplicate) -> duplicate // 중복된 키가 있을 경우 최신 데이터를 유지
+                p -> generateUniqueKey(p.getName(), p.getAddress()),
+                p -> p
             ));
 
-        // 추가/수정 대상 찾기
-        List<Place> placesToSave = csvDataMap.entrySet().stream()
-            .filter(entry -> !existingPlacesMap.containsKey(entry.getKey()) || isUpdated(entry.getKey(), entry.getValue(), existingPlacesMap))
+        // 삽입 또는 업데이트가 필요한 데이터를 선별합니다.
+        List<Place> toSave = csvDataMap.entrySet().stream()
+            .filter(entry -> !existingMap.containsKey(entry.getKey()) || isUpdated(entry.getKey(), entry.getValue(), existingMap))
             .map(Map.Entry::getValue)
             .collect(Collectors.toList());
 
-        // 삭제할 데이터 필터링
-        List<Long> placeIdsToDelete = existingPlaces.stream()
-            .filter(place -> !csvDataMap.containsKey(generateUniqueKey(place.getName(), place.getAddress())))
-            .map(Place::getId)
-            .collect(Collectors.toList());
-
-        // ✅ 벌크 INSERT & DELETE 수행
-        placeBulkRepository.batchInsertPlaces(placesToSave);
-        placeBulkRepository.batchDeletePlaces(placeIdsToDelete);
-
-        /* // jpa 연산
-        // 삭제 대상 찾기
-        List<Place> placesToDelete = existingPlaces.stream()
-            .filter(place -> !csvDataMap.containsKey(generateUniqueKey(place.getName(), place.getAddress())))
-            .collect(Collectors.toList());
-
-        placeRepository.saveAll(placesToSave);
-        placeRepository.deleteAll(placesToDelete);
-        */
-
-        long end = System.currentTimeMillis();
-        log.info("[Place] 데이터 동기화 완료 - 추가/수정: {}, 삭제: {}, 시간: {}", placesToSave.size(), placeIdsToDelete.size(), end - start);
+        if (!toSave.isEmpty()) {
+            placeBulkRepository.batchInsertPlaces(toSave);
+        }
+        log.info("[Place] 배치 업데이트 - 처리건수: {}", toSave.size());
     }
 
+    // 기존 Place와 비교하여 업데이트가 필요한지 확인합니다.
     private boolean isUpdated(String key, Place newPlace, Map<String, Place> existingPlacesMap) {
         Place existingPlace = existingPlacesMap.get(key);
+        if (existingPlace == null) return true;
 
-        if (existingPlace == null) {
-            return true; // 기존 데이터가 없는 경우 업데이트 필요
-        }
-
-        // 필드별 비교
         return !Objects.equals(existingPlace.getName(), newPlace.getName())
             || !Objects.equals(existingPlace.getPlace_type(), newPlace.getPlace_type())
             || !Objects.equals(existingPlace.getAddress(), newPlace.getAddress())
@@ -153,10 +170,12 @@ public class PlaceInitializer implements ApplicationRunner {
             || !existingPlace.getCoordinate().equalsExact(newPlace.getCoordinate());
     }
 
+    // 이름과 주소를 조합하여 고유 키를 생성합니다.
     private String generateUniqueKey(String name, String address) {
         return (name.trim() + "_" + address.trim()).replaceAll("\\s+", "_");
     }
 
+    // 위도, 경도 정보를 사용하여 Point 객체를 생성하고 SRID를 설정합니다.
     private Point createPoint(double latitude, double longitude) {
         Point point = geometryFactory.createPoint(new Coordinate(longitude, latitude));
         point.setSRID(4326);
