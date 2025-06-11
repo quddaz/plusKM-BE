@@ -9,8 +9,8 @@ import org.springframework.http.HttpStatus;
 public enum GlobalErrorCode implements ErrorCode {
 
     FILE_CONVERT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "file convert failed"),
-    ;
 
+    ADMIN_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "admin not authorized");
     private final HttpStatus httpStatus;
     private final String message;
 }

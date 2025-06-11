@@ -49,3 +49,7 @@ jwt:
 cors:
   allowed:
     origins: ${CORS_ALLOWED_ORIGINS}
+csv:
+  hospitalPath: ${CSV_HOSPITAL_PATH}
+  pharmacyPath: ${CSV_DOCTOR_PATH}
+  batchSize: ${CSV_BATCH_SIZE:1000}

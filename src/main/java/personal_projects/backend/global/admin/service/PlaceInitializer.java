@@ -1,20 +1,17 @@
-package personal_projects.backend.domain.place.repository.init;
+package personal_projects.backend.global.admin.service;
 
 import com.opencsv.CSVReader;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Service;
 import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.place.domain.enumType.Place_type;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
 import personal_projects.backend.domain.place.repository.bulk.PlaceBulkRepository;
-import personal_projects.backend.global.util.DummyDataInit;
+import personal_projects.backend.global.admin.CsvProperties;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,19 +21,16 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
-@Order(1)
-@DummyDataInit
-public class PlaceInitializer implements ApplicationRunner {
+@Service
+public class PlaceInitializer{
 
     private final PlaceRepository placeRepository;
     private final GeometryFactory geometryFactory;
     private final PlaceBulkRepository placeBulkRepository;
+    private final CsvProperties csvProperties;
 
-    private static final int BATCH_SIZE = 1000;
 
-    @Override
-    @Transactional
-    public void run(ApplicationArguments args) throws Exception {
+    public void updatePlaceDataFromCsv() {
 
         // 1. 기존 모든 Place 데이터를 비활성화합니다.
         placeRepository.deactivateAll();
@@ -55,8 +49,8 @@ public class PlaceInitializer implements ApplicationRunner {
         Map<String, Place> csvDataMap = new HashMap<>();
 
         // 병원 및 약국 CSV 파일 데이터를 동기화합니다.
-        syncPlaceData("data/병원정보.csv", 1, 28, 29, 3, 10, 11, csvDataMap);
-        syncPlaceData("data/약국정보.csv", 1, 13, 14, 3, 10, 11, csvDataMap);
+        syncPlaceData(csvProperties.hospitalPath(), 1, 28, 29, 3, 10, 11, csvDataMap);
+        syncPlaceData(csvProperties.pharmacyPath(), 1, 13, 14, 3, 10, 11, csvDataMap);
 
         if (!csvDataMap.isEmpty()) {
             updateDatabasePartial(csvDataMap);
@@ -111,7 +105,7 @@ public class PlaceInitializer implements ApplicationRunner {
 
 
                 // BATCH_SIZE만큼 데이터가 쌓이면 부분적으로 DB에 반영하고 맵을 비웁니다.
-                if (csvDataMap.size() >= BATCH_SIZE) {
+                if (csvDataMap.size() >= csvProperties.batchSize()) {
                     updateDatabasePartial(csvDataMap);
                     csvDataMap.clear();
                 }
@@ -125,7 +119,6 @@ public class PlaceInitializer implements ApplicationRunner {
         }
     }
 
-    @Transactional
     protected void updateDatabasePartial(Map<String, Place> csvDataMap) {
         if (csvDataMap.isEmpty()) {
             return;
