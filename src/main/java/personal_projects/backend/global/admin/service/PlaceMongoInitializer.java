@@ -1,4 +1,4 @@
-package personal_projects.backend.domain.place.repository.init;
+package personal_projects.backend.global.admin.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.place.domain.mongo.MongoPlace;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
+import personal_projects.backend.global.admin.CsvProperties;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +20,10 @@ public class PlaceMongoInitializer {
 
     private final MongoTemplate mongoTemplate;
     private final PlaceRepository placeRepository;
+    private final CsvProperties csvProperties;
 
-    private static final int BATCH_SIZE = 1000;
 
-
-    public void updatePlaceDataFromCsv() throws Exception {
+    public void updatePlaceDataFromCsv() {
         log.info("MongoDB 갱신 실행 시작");
 
         mongoTemplate.getCollection("place").deleteMany(new org.bson.Document());
@@ -47,7 +47,7 @@ public class PlaceMongoInitializer {
 
                 currentBatch.add(mongoPlace);
 
-                if (currentBatch.size() >= BATCH_SIZE) {
+                if (currentBatch.size() >= csvProperties.batchSize()) {
                     mongoTemplate.insertAll(currentBatch);
                     currentBatch.clear();
                 }
