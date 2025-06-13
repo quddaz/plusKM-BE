@@ -1,0 +1,60 @@
+spring:
+  profiles:
+    active: local
+
+  datasource:
+    url: jdbc:mariadb://localhost:3306/myapp_local
+    username: local_user
+    password: local_password
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/myapp_local
+      auto-index-creation: true
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+security:
+  oauth2:
+    client:
+      registration:
+        google:
+          client-id: test-google-client-id
+          client-secret: test-google-client-secret
+          redirect-uri: http://localhost:8080/login/oauth2/code/google
+          authorization-grant-type: authorization_code
+          scope:
+            - profile
+            - email
+      provider:
+        google:
+          authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+          token-uri: https://oauth2.googleapis.com/token
+          user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+          user-name-attribute: sub
+
+jwt:
+  secret-key: test-jwt-secret-key
+  issuer: myapp-local
+  access-token-expiration: 3600000 # 1시간
+  refresh-token-expiration: 1209600000 # 14일
+
+cors:
+  allowed:
+    origins: http://localhost:3000
+
+csv:
+  hospitalPath: src/main/resources/data/hospitals.csv
+  pharmacyPath: src/main/resources/data/pharmacies.csv
+  batchSize: 1000
+
+logging:
+  file:
+    path: ./logs
