@@ -86,7 +86,7 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token);
             return claims.getBody().getExpiration().after(new Date());
         } catch (Exception e) {
-            log.error("Token validation error: ", e);
+            log.error("Token validation error");
             return false;
         }
     }

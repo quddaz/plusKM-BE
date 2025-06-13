@@ -62,6 +62,8 @@ dependencies {
 
 	// mariadb
 	implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.3'
+	//h2
+	implementation 'com.h2database:h2:2.1.214'
 }
 
 //Querydsl 설정
