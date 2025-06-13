@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:local}
+    active: ${SPRING_PROFILES_ACTIVE}
 
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -53,3 +53,6 @@ csv:
   hospitalPath: ${CSV_HOSPITAL_PATH}
   pharmacyPath: ${CSV_DOCTOR_PATH}
   batchSize: ${CSV_BATCH_SIZE:1000}
+logging:
+  file:
+    path: /logs/logging
