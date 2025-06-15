@@ -59,11 +59,14 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	// Spring Boot Starter Data MongoDB
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-
 	// mariadb
 	implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.3'
 	//h2
 	implementation 'com.h2database:h2:2.1.214'
+	// Spring Boot Actuator
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	// Micrometer Prometheus
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 }
 
 //Querydsl 설정
