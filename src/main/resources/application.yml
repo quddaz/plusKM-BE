@@ -56,3 +56,11 @@ csv:
 logging:
   file:
     path: /logs/logging
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, info
+  endpoint:
+    prometheus:
+      enabled: true
