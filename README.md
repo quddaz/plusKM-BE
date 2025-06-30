@@ -33,7 +33,3 @@
 > 맘에 드는 의료 기관을 구독해보세요
 
 <img src="https://github.com/user-attachments/assets/8e910da4-51a6-46a8-9720-5c558f259adc" alt="이미지 설명" width="200">
-
-### 프로젝트 구성
-
-![Image](https://github.com/user-attachments/assets/6ebc17bb-3730-4d08-b876-81b426a03171)
