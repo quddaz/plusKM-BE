@@ -46,7 +46,7 @@ fix/15/cache-stale
 - 범위 밖: 일반적인 버그·보안·성능·아키텍처 리뷰 및 자동 merge 차단
 - 결과: PR의 고정 댓글을 갱신하며 사람이 최종 판단한다.
 - 인증: `OPENAI_API_KEY` 저장소 Secret과 선택적인 `OPENAI_MODEL` 저장소 Variable을 사용한다.
-- 보안: PR 코드를 실행하지 않고 diff만 OpenAI Responses API에 전달하며 `store: false`를 사용한다.
+- 보안: PR 코드를 실행하지 않고 diff만 OpenAI Responses API에 전달하며 `store: false`를 사용한다. API Secret을 사용하는 스크립트와 정책은 PR의 변경 대상이 아닌 base 브랜치에서 읽는다.
 - 외부 fork PR은 Secret 노출을 막기 위해 해당 workflow의 자동 댓글 대상에서 제외한다.
 
 ## 권한과 안전성

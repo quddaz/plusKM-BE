@@ -27,6 +27,8 @@ jobs:
       - name: Checkout review policy and script
         uses: actions/checkout@v4
         with:
+          # API Secret을 사용하는 스크립트와 정책은 PR 브랜치가 아닌 신뢰할 수 있는 base 브랜치에서 읽는다.
+          ref: ${{ github.event.pull_request.base.ref }}
           sparse-checkout: |
             .github/review-policy.md
             scripts/ai_pr_review.mjs
