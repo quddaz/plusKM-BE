@@ -1,0 +1,46 @@
+name: Feature
+description: 새로운 기능이나 개선 사항을 제안합니다.
+title: "[feat] "
+labels:
+  - feat
+body:
+  - type: markdown
+    attributes:
+      value: |
+        작업을 시작할 이슈에는 `ready` 라벨을 추가해 주세요.
+        그러면 `feat/{이슈번호}/{이슈명}` 브랜치가 자동으로 생성됩니다.
+  - type: textarea
+    id: problem
+    attributes:
+      label: 문제 또는 목표
+      description: 어떤 문제를 해결하거나 어떤 목표를 달성하려는지 작성해 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: decision
+    attributes:
+      label: 의사결정
+      description: 선택한 구현 방향과 선택하지 않은 대안을 작성해 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: 범위
+      description: 이번 작업에 포함하는 내용과 포함하지 않는 내용을 작성해 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 완료 조건
+      description: 작업 완료를 판단할 수 있는 조건을 작성해 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: 테스트 계획
+      description: 추가하거나 수정할 테스트를 작성해 주세요.
+    validations:
+      required: true

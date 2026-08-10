@@ -1,0 +1,89 @@
+name: Create issue branch
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  create-branch:
+    if: github.event.label.name == 'ready'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create branch from the default branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels.map((label) =>
+              typeof label === 'string' ? label : label.name
+            );
+            const labeledTypes = labels.filter((label) => ['feat', 'fix'].includes(label));
+            const titleType = issue.title.match(/^\[(feat|fix)\]/i)?.[1]?.toLowerCase();
+            const types = labeledTypes.length === 0 && titleType
+              ? [titleType]
+              : labeledTypes;
+
+            const comment = async (body) => {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body,
+              });
+            };
+
+            if (types.length !== 1) {
+              await comment('브랜치를 생성하려면 `feat` 또는 `fix` 라벨 중 하나만 남겨 주세요.');
+              core.setFailed('Exactly one of feat/fix labels is required.');
+              return;
+            }
+
+            const type = types[0];
+            const slug = issue.title
+              .replace(/^\[(feat|fix)\]\s*/i, '')
+              .normalize('NFKC')
+              .toLowerCase()
+              .replace(/[^\p{Letter}\p{Number}]+/gu, '-')
+              .replace(/^-+|-+$/g, '')
+              .slice(0, 60) || `issue-${issue.number}`;
+            const branch = `${type}/${issue.number}/${slug}`;
+
+            const repository = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const defaultBranch = repository.data.default_branch;
+            const defaultRef = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `heads/${defaultBranch}`,
+            });
+
+            try {
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `heads/${branch}`,
+              });
+              await comment(`이미 브랜치가 존재합니다: \`${branch}\``);
+              return;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/heads/${branch}`,
+              sha: defaultRef.data.object.sha,
+            });
+
+            await comment([
+              `브랜치를 생성했습니다: \`${branch}\``,
+              '',
+              `작업 후 PR 본문에 \`Closes #${issue.number}\`를 포함해 주세요.`,
+            ].join('\n'));

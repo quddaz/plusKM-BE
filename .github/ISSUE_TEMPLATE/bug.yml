@@ -1,0 +1,38 @@
+name: Bug
+description: 기존 동작의 문제를 제보합니다.
+title: "[fix] "
+labels:
+  - fix
+body:
+  - type: markdown
+    attributes:
+      value: |
+        작업을 시작할 이슈에는 `ready` 라벨을 추가해 주세요.
+        그러면 `fix/{이슈번호}/{이슈명}` 브랜치가 자동으로 생성됩니다.
+  - type: textarea
+    id: symptom
+    attributes:
+      label: 현상
+      description: 어떤 상황에서 어떤 문제가 발생하는지 작성해 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 재현 방법
+      description: 문제를 재현할 수 있는 절차를 작성해 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대 동작
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: 회귀 테스트 계획
+      description: 문제를 방지하기 위해 추가하거나 수정할 테스트를 작성해 주세요.
+    validations:
+      required: true

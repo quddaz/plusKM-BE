@@ -1,0 +1,45 @@
+name: Pull request check
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name and linked issue
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if [[ ! "$BRANCH_NAME" =~ ^(feat|fix)/[0-9]+/[[:alnum:]가-힣][[:alnum:]가-힣-]*$ ]]; then
+            echo "Invalid branch name: $BRANCH_NAME"
+            echo "Expected: feat/{issue-number}/{name} or fix/{issue-number}/{name}"
+            exit 1
+          fi
+
+          if ! printf '%s' "$PR_BODY" | grep -Eiq '(closes|fixes|resolves)[[:space:]]+#[0-9]+'; then
+            echo 'PR body must contain Closes #N, Fixes #N, or Resolves #N.'
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run tests
+        run: ./gradlew clean test
