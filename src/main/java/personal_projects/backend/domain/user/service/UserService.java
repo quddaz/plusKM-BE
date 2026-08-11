@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import personal_projects.backend.domain.user.domain.User;
+import personal_projects.backend.domain.user.entity.User;
 import personal_projects.backend.domain.user.exception.UserNotFoundException;
-import personal_projects.backend.domain.user.exception.errorCode.UserErrorCode;
+import personal_projects.backend.domain.user.exception.code.UserErrorCode;
 import personal_projects.backend.domain.user.repository.UserRepository;
 
 @Service

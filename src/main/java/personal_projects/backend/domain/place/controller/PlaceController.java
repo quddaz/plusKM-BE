@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import personal_projects.backend.domain.oauth.dto.CustomOAuth2User;
-import personal_projects.backend.domain.place.dto.request.SearchPlaceRequest;
+import personal_projects.backend.domain.auth.dto.AuthenticatedUserPrincipal;
+import personal_projects.backend.domain.place.dto.request.NearbyPlaceSearchRequest;
 import personal_projects.backend.domain.place.dto.response.BookmarkedPlacesResponse;
-import personal_projects.backend.domain.place.dto.response.SearchDetailPlaceResponse;
-import personal_projects.backend.domain.place.dto.response.SearchPlacesResponse;
+import personal_projects.backend.domain.place.dto.response.PlaceDetailResponse;
+import personal_projects.backend.domain.place.dto.response.NearbyPlacesResponse;
 import personal_projects.backend.domain.place.service.PlaceService;
 
 @RestController
@@ -20,26 +20,26 @@ public class PlaceController {
 
     @PostMapping("/search")
     @ResponseStatus(HttpStatus.OK)
-    public SearchPlacesResponse getPlacesWithinBuffer(
-        @RequestBody SearchPlaceRequest searchPlaceRequest) {
-        return SearchPlacesResponse.from(placeService.getPlacesWithinBuffer(searchPlaceRequest));
+    public NearbyPlacesResponse findNearbyPlaces(
+        @RequestBody NearbyPlaceSearchRequest searchPlaceRequest) {
+        return NearbyPlacesResponse.from(placeService.findNearbyPlaces(searchPlaceRequest));
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public SearchDetailPlaceResponse getPlaceDetail(
+    public PlaceDetailResponse getPlaceDetail(
         @PathVariable(name = "id") long id,
-        @AuthenticationPrincipal CustomOAuth2User customOAuth2User
+        @AuthenticationPrincipal AuthenticatedUserPrincipal principal
     ) {
-        return placeService.findPlaceDetailByPlaceId(id, customOAuth2User.getUserId());
+        return placeService.findPlaceDetail(id, principal.getUserId());
     }
 
     @GetMapping("/bookmark")
     @ResponseStatus(HttpStatus.OK)
-    public BookmarkedPlacesResponse getBookMarkPlaces(
-        @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
+    public BookmarkedPlacesResponse getBookmarkedPlaces(
+        @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
         return BookmarkedPlacesResponse.from(
-            placeService.findBookMarkPlacesByUserId(customOAuth2User.getUserId())
+            placeService.findBookmarkedPlacesByUserId(principal.getUserId())
         );
     }
 }

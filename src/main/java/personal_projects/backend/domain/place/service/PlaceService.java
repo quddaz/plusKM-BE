@@ -1,16 +1,15 @@
 package personal_projects.backend.domain.place.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import personal_projects.backend.domain.place.domain.Place;
-import personal_projects.backend.domain.place.dto.request.SearchPlaceRequest;
-import personal_projects.backend.domain.place.dto.response.SearchBookMarkPlaceResponse;
-import personal_projects.backend.domain.place.dto.response.SearchDetailPlaceResponse;
-import personal_projects.backend.domain.place.dto.response.SearchResultPlaceResponse;
+import personal_projects.backend.domain.place.entity.Place;
+import personal_projects.backend.domain.place.dto.request.NearbyPlaceSearchRequest;
+import personal_projects.backend.domain.place.dto.response.BookmarkedPlaceResponse;
+import personal_projects.backend.domain.place.dto.response.PlaceDetailResponse;
+import personal_projects.backend.domain.place.dto.response.NearbyPlaceResponse;
 import personal_projects.backend.domain.place.exception.PlaceNotFoundException;
-import personal_projects.backend.domain.place.exception.errorCode.PlaceErrorCode;
+import personal_projects.backend.domain.place.exception.code.PlaceErrorCode;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
 
 import java.util.List;
@@ -18,7 +17,6 @@ import java.util.List;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
-@Slf4j
 public class PlaceService {
 
     private final PlaceRepository placeRepository;
@@ -27,16 +25,20 @@ public class PlaceService {
         return placeRepository.findById(id).orElseThrow(() -> new PlaceNotFoundException(PlaceErrorCode.PLACE_NOT_FOUND));
     }
 
-    public List<SearchResultPlaceResponse> getPlacesWithinBuffer(SearchPlaceRequest searchPlaceRequest) {
-        return placeRepository.findPlacesWithinBuffer(searchPlaceRequest.longitude(), searchPlaceRequest.latitude(),
-            searchPlaceRequest.bufferDistance(), searchPlaceRequest.searchType());
+    public List<NearbyPlaceResponse> findNearbyPlaces(NearbyPlaceSearchRequest request) {
+        return placeRepository.findNearbyPlaces(
+            request.longitude(),
+            request.latitude(),
+            request.radiusKilometers(),
+            request.searchType()
+        );
     }
 
-    public SearchDetailPlaceResponse findPlaceDetailByPlaceId(Long placeId, Long userId) {
-        return placeRepository.findPlaceDetailByPlaceId(placeId, userId);
+    public PlaceDetailResponse findPlaceDetail(Long placeId, Long userId) {
+        return placeRepository.findPlaceDetail(placeId, userId);
     }
 
-    public List<SearchBookMarkPlaceResponse> findBookMarkPlacesByUserId(Long userId) {
-        return placeRepository.findBookMarkPlacesByUserId(userId);
+    public List<BookmarkedPlaceResponse> findBookmarkedPlacesByUserId(Long userId) {
+        return placeRepository.findBookmarkedPlacesByUserId(userId);
     }
 }

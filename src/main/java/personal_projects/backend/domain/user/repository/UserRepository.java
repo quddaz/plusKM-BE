@@ -1,6 +1,6 @@
 package personal_projects.backend.domain.user.repository;
 
-import personal_projects.backend.domain.user.domain.User;
+import personal_projects.backend.domain.user.entity.User;
 
 import java.util.List;
 import java.util.Optional;

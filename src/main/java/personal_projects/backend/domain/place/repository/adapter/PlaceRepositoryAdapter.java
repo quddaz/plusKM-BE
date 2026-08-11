@@ -2,11 +2,11 @@ package personal_projects.backend.domain.place.repository.adapter;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import personal_projects.backend.domain.place.domain.Place;
-import personal_projects.backend.domain.place.dto.Search_Type;
-import personal_projects.backend.domain.place.dto.response.SearchBookMarkPlaceResponse;
-import personal_projects.backend.domain.place.dto.response.SearchDetailPlaceResponse;
-import personal_projects.backend.domain.place.dto.response.SearchResultPlaceResponse;
+import personal_projects.backend.domain.place.entity.Place;
+import personal_projects.backend.domain.place.type.PlaceSearchType;
+import personal_projects.backend.domain.place.dto.response.BookmarkedPlaceResponse;
+import personal_projects.backend.domain.place.dto.response.PlaceDetailResponse;
+import personal_projects.backend.domain.place.dto.response.NearbyPlaceResponse;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
 import personal_projects.backend.domain.place.repository.jdbc.PlaceJdbcRepository;
 import personal_projects.backend.domain.place.repository.jpa.PlaceJpaRepository;
@@ -47,27 +47,27 @@ public class PlaceRepositoryAdapter implements PlaceRepository {
     }
 
     @Override
-    public List<SearchResultPlaceResponse> findPlacesWithinBuffer(
+    public List<NearbyPlaceResponse> findNearbyPlaces(
         double longitude,
         double latitude,
-        double bufferDistance,
-        Search_Type searchType
+        double radiusKilometers,
+        PlaceSearchType searchType
     ) {
-        return jdbcRepository.findPlacesWithinBuffer(
+        return jdbcRepository.findNearbyPlaces(
             longitude,
             latitude,
-            bufferDistance,
+            radiusKilometers,
             searchType
         );
     }
 
     @Override
-    public SearchDetailPlaceResponse findPlaceDetailByPlaceId(Long placeId, Long userId) {
-        return jdbcRepository.findPlaceDetailByPlaceId(placeId, userId);
+    public PlaceDetailResponse findPlaceDetail(Long placeId, Long userId) {
+        return jdbcRepository.findPlaceDetail(placeId, userId);
     }
 
     @Override
-    public List<SearchBookMarkPlaceResponse> findBookMarkPlacesByUserId(Long userId) {
-        return jdbcRepository.findBookMarkPlacesByUserId(userId);
+    public List<BookmarkedPlaceResponse> findBookmarkedPlacesByUserId(Long userId) {
+        return jdbcRepository.findBookmarkedPlacesByUserId(userId);
     }
 }

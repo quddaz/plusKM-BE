@@ -2,7 +2,7 @@ package personal_projects.backend.domain.user.repository.adapter;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import personal_projects.backend.domain.user.domain.User;
+import personal_projects.backend.domain.user.entity.User;
 import personal_projects.backend.domain.user.repository.UserRepository;
 import personal_projects.backend.domain.user.repository.jpa.UserJpaRepository;
 

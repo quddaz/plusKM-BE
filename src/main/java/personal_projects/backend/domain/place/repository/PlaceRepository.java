@@ -1,10 +1,10 @@
 package personal_projects.backend.domain.place.repository;
 
-import personal_projects.backend.domain.place.domain.Place;
-import personal_projects.backend.domain.place.dto.Search_Type;
-import personal_projects.backend.domain.place.dto.response.SearchBookMarkPlaceResponse;
-import personal_projects.backend.domain.place.dto.response.SearchDetailPlaceResponse;
-import personal_projects.backend.domain.place.dto.response.SearchResultPlaceResponse;
+import personal_projects.backend.domain.place.entity.Place;
+import personal_projects.backend.domain.place.type.PlaceSearchType;
+import personal_projects.backend.domain.place.dto.response.BookmarkedPlaceResponse;
+import personal_projects.backend.domain.place.dto.response.PlaceDetailResponse;
+import personal_projects.backend.domain.place.dto.response.NearbyPlaceResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,14 +21,14 @@ public interface PlaceRepository {
 
     void batchUpsert(List<Place> places);
 
-    List<SearchResultPlaceResponse> findPlacesWithinBuffer(
+    List<NearbyPlaceResponse> findNearbyPlaces(
         double longitude,
         double latitude,
-        double bufferDistance,
-        Search_Type searchType
+        double radiusKilometers,
+        PlaceSearchType searchType
     );
 
-    SearchDetailPlaceResponse findPlaceDetailByPlaceId(Long placeId, Long userId);
+    PlaceDetailResponse findPlaceDetail(Long placeId, Long userId);
 
-    List<SearchBookMarkPlaceResponse> findBookMarkPlacesByUserId(Long userId);
+    List<BookmarkedPlaceResponse> findBookmarkedPlacesByUserId(Long userId);
 }
