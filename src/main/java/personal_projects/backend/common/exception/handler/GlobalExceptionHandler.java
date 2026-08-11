@@ -1,6 +1,9 @@
 package personal_projects.backend.common.exception.handler;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,13 +20,17 @@ import personal_projects.backend.domain.place.importer.exception.PlaceImportForb
 import personal_projects.backend.domain.place.importer.exception.PlaceImportException;
 import personal_projects.backend.common.response.ErrorResponse;
 import personal_projects.backend.common.exception.BusinessException;
+import personal_projects.backend.common.exception.DomainErrorCode;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 @Slf4j
 public class GlobalExceptionHandler {
+
+    private final MessageSource messageSource;
 
     @ExceptionHandler({
         PlaceNotFoundException.class,
@@ -58,14 +65,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleIllegalArgument(IllegalArgumentException exception) {
-        return ErrorResponse.of("INVALID_ARGUMENT", exception.getMessage());
+        return toErrorResponse(DomainErrorCode.INVALID_INPUT);
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleException(Exception exception) {
         log.error("Unhandled exception", exception);
-        return ErrorResponse.of("INTERNAL_SERVER_ERROR", "서버 내부 오류가 발생했습니다.");
+        return toErrorResponse(DomainErrorCode.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -79,13 +86,26 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        return ErrorResponse.of("VALIDATION_ERROR", errors.toString());
+        return ErrorResponse.of(
+            DomainErrorCode.VALIDATION_ERROR,
+            messageOf(DomainErrorCode.VALIDATION_ERROR),
+            errors
+        );
     }
 
     private ErrorResponse toErrorResponse(BusinessException exception) {
-        return ErrorResponse.of(
-            exception.getErrorCode().toString(),
-            exception.getErrorCode().getMessage()
+        return toErrorResponse(exception.code());
+    }
+
+    private ErrorResponse toErrorResponse(DomainErrorCode code) {
+        return ErrorResponse.of(code, messageOf(code));
+    }
+
+    private String messageOf(DomainErrorCode code) {
+        return messageSource.getMessage(
+            code.messageKey(),
+            null,
+            LocaleContextHolder.getLocale()
         );
     }
 }

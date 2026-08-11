@@ -8,7 +8,7 @@ import personal_projects.backend.domain.medicalrecord.entity.MedicalRecord;
 import personal_projects.backend.domain.medicalrecord.dto.request.CreateMedicalRecordRequest;
 import personal_projects.backend.domain.medicalrecord.dto.response.MedicalRecordSummaryResponse;
 import personal_projects.backend.domain.medicalrecord.exception.MedicalRecordNotFoundException;
-import personal_projects.backend.domain.medicalrecord.exception.code.MedicalRecordErrorCode;
+import personal_projects.backend.common.exception.DomainErrorCode;
 import personal_projects.backend.domain.medicalrecord.repository.MedicalRecordRepository;
 import personal_projects.backend.domain.place.entity.Place;
 import personal_projects.backend.domain.place.service.PlaceService;
@@ -49,6 +49,6 @@ public class MedicalRecordService {
     }
     public MedicalRecord findById(Long recordId) {
         return medicalRecordRepository.findById(recordId)
-            .orElseThrow(() -> new MedicalRecordNotFoundException(MedicalRecordErrorCode.MEDICAL_RECORD_NOT_FOUND));
+            .orElseThrow(() -> new MedicalRecordNotFoundException(DomainErrorCode.MEDICAL_RECORD_NOT_FOUND));
     }
 }

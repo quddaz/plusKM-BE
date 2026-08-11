@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import personal_projects.backend.common.response.ErrorResponse;
+import personal_projects.backend.common.exception.DomainErrorCode;
 
 import java.io.IOException;
 
@@ -21,6 +23,7 @@ import java.io.IOException;
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private final ObjectMapper objectMapper;
+    private final MessageSource messageSource;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
@@ -30,7 +33,14 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setCharacterEncoding("UTF-8");
         objectMapper.writeValue(
             response.getWriter(),
-            ErrorResponse.of("AUTHENTICATION_REQUIRED", "로그인 후 다시 접근해주시기 바랍니다.")
+            ErrorResponse.of(
+                DomainErrorCode.AUTHENTICATION_REQUIRED,
+                messageSource.getMessage(
+                    DomainErrorCode.AUTHENTICATION_REQUIRED.messageKey(),
+                    null,
+                    request.getLocale()
+                )
+            )
         );
     }
 }

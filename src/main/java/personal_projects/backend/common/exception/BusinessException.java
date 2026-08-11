@@ -1,15 +1,15 @@
 package personal_projects.backend.common.exception;
 
-import lombok.Getter;
-import personal_projects.backend.common.exception.code.ErrorCode;
-
-@Getter
 public abstract class BusinessException extends RuntimeException {
 
-    private final ErrorCode errorCode;
+    private final DomainErrorCode code;
 
-    protected BusinessException(ErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
+    protected BusinessException(DomainErrorCode code) {
+        super(code.name());
+        this.code = code;
+    }
+
+    public DomainErrorCode code() {
+        return code;
     }
 }

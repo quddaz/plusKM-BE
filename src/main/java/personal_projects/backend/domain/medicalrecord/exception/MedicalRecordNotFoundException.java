@@ -1,11 +1,11 @@
 package personal_projects.backend.domain.medicalrecord.exception;
 
 import personal_projects.backend.common.exception.BusinessException;
-import personal_projects.backend.common.exception.code.ErrorCode;
+import personal_projects.backend.common.exception.DomainErrorCode;
 
 public class MedicalRecordNotFoundException extends BusinessException {
 
-    public MedicalRecordNotFoundException(ErrorCode errorCode) {
-        super(errorCode);
+    public MedicalRecordNotFoundException(DomainErrorCode code) {
+        super(code);
     }
 }
