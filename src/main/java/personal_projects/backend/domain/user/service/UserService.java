@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import personal_projects.backend.domain.user.entity.User;
 import personal_projects.backend.domain.user.exception.UserNotFoundException;
-import personal_projects.backend.common.exception.DomainErrorCode;
+import personal_projects.backend.domain.user.exception.code.UserErrorCode;
 import personal_projects.backend.domain.user.repository.UserRepository;
 
 @Service
@@ -17,6 +17,6 @@ public class UserService {
     private final UserRepository userRepository;
 
     public User findById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(DomainErrorCode.USER_NOT_FOUND));
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND));
     }
 }

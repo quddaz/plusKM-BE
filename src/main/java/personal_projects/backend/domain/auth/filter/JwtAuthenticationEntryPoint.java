@@ -11,7 +11,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import personal_projects.backend.common.response.ErrorResponse;
-import personal_projects.backend.common.exception.DomainErrorCode;
+import personal_projects.backend.domain.auth.exception.code.AuthErrorCode;
 
 import java.io.IOException;
 
@@ -34,9 +34,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         objectMapper.writeValue(
             response.getWriter(),
             ErrorResponse.of(
-                DomainErrorCode.AUTHENTICATION_REQUIRED,
+                AuthErrorCode.AUTHENTICATION_REQUIRED,
                 messageSource.getMessage(
-                    DomainErrorCode.AUTHENTICATION_REQUIRED.messageKey(),
+                    AuthErrorCode.AUTHENTICATION_REQUIRED.messageKey(),
                     null,
                     request.getLocale()
                 )

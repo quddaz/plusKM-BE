@@ -11,7 +11,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 import personal_projects.backend.common.response.ErrorResponse;
-import personal_projects.backend.common.exception.DomainErrorCode;
+import personal_projects.backend.domain.auth.exception.code.AuthErrorCode;
 
 import java.io.IOException;
 
@@ -34,9 +34,9 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         objectMapper.writeValue(
             response.getWriter(),
             ErrorResponse.of(
-                DomainErrorCode.ACCESS_DENIED,
+                AuthErrorCode.ACCESS_DENIED,
                 messageSource.getMessage(
-                    DomainErrorCode.ACCESS_DENIED.messageKey(),
+                    AuthErrorCode.ACCESS_DENIED.messageKey(),
                     null,
                     request.getLocale()
                 )

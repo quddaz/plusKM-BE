@@ -21,6 +21,7 @@ import personal_projects.backend.domain.place.importer.exception.PlaceImportExce
 import personal_projects.backend.common.response.ErrorResponse;
 import personal_projects.backend.common.exception.BusinessException;
 import personal_projects.backend.common.exception.DomainErrorCode;
+import personal_projects.backend.common.exception.code.CommonErrorCode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,14 +66,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleIllegalArgument(IllegalArgumentException exception) {
-        return toErrorResponse(DomainErrorCode.INVALID_INPUT);
+        return toErrorResponse(CommonErrorCode.INVALID_INPUT);
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleException(Exception exception) {
         log.error("Unhandled exception", exception);
-        return toErrorResponse(DomainErrorCode.INTERNAL_SERVER_ERROR);
+        return toErrorResponse(CommonErrorCode.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -87,8 +88,8 @@ public class GlobalExceptionHandler {
         });
 
         return ErrorResponse.of(
-            DomainErrorCode.VALIDATION_ERROR,
-            messageOf(DomainErrorCode.VALIDATION_ERROR),
+            CommonErrorCode.VALIDATION_ERROR,
+            messageOf(CommonErrorCode.VALIDATION_ERROR),
             errors
         );
     }

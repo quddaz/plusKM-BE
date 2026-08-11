@@ -9,7 +9,7 @@ import personal_projects.backend.domain.place.dto.response.BookmarkedPlaceRespon
 import personal_projects.backend.domain.place.dto.response.PlaceDetailResponse;
 import personal_projects.backend.domain.place.dto.response.NearbyPlaceResponse;
 import personal_projects.backend.domain.place.exception.PlaceNotFoundException;
-import personal_projects.backend.common.exception.DomainErrorCode;
+import personal_projects.backend.domain.place.exception.code.PlaceErrorCode;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public class PlaceService {
     private final PlaceRepository placeRepository;
 
     public Place findById(Long id) {
-        return placeRepository.findById(id).orElseThrow(() -> new PlaceNotFoundException(DomainErrorCode.PLACE_NOT_FOUND));
+        return placeRepository.findById(id).orElseThrow(() -> new PlaceNotFoundException(PlaceErrorCode.PLACE_NOT_FOUND));
     }
 
     public List<NearbyPlaceResponse> findNearbyPlaces(NearbyPlaceSearchRequest request) {

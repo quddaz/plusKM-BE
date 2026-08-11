@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import personal_projects.backend.domain.auth.exception.InvalidRefreshTokenException;
-import personal_projects.backend.common.exception.DomainErrorCode;
+import personal_projects.backend.domain.auth.exception.code.AuthErrorCode;
 import personal_projects.backend.domain.auth.token.JwtTokenProvider;
 import personal_projects.backend.domain.user.entity.User;
 import personal_projects.backend.domain.user.type.Role;
@@ -21,7 +21,7 @@ public class TokenService {
     public void reissueAccessToken(String refreshToken, HttpServletResponse response) {
 
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new InvalidRefreshTokenException(DomainErrorCode.INVALID_REFRESH_TOKEN);
+            throw new InvalidRefreshTokenException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         User user = jwtTokenProvider.resolveUser(refreshToken);
