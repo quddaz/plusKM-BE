@@ -16,8 +16,14 @@ jobs:
       - name: Validate branch name and linked issue
         env:
           BRANCH_NAME: ${{ github.head_ref }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
+          if [[ "$BRANCH_NAME" == "develop" && "$BASE_BRANCH" == "main" ]]; then
+            echo "Skipping feature branch policy for develop -> main integration PR."
+            exit 0
+          fi
+
           if [[ ! "$BRANCH_NAME" =~ ^(feat|fix)/[0-9]+/[[:alnum:]가-힣][[:alnum:]가-힣-]*$ ]]; then
             echo "Invalid branch name: $BRANCH_NAME"
             echo "Expected: feat/{issue-number}/{name} or fix/{issue-number}/{name}"
