@@ -27,9 +27,7 @@ public class BookMarkService {
         Place place = placeService.findById(placeId);
 
         bookMarkRepository.findByPlaceAndUser(place, user).ifPresentOrElse(
-                bookMark -> {
-                    bookMarkRepository.delete(bookMark);
-                },
+                bookMarkRepository::delete,
                 () -> {
                     bookMarkRepository.save(BookMark.of(place, user));
                 }
