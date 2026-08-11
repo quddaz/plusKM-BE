@@ -1,10 +1,10 @@
 package personal_projects.backend.common.exception;
 
-public abstract class BusinessException extends RuntimeException {
+public final class BusinessException extends RuntimeException {
 
     private final DomainErrorCode code;
 
-    protected BusinessException(DomainErrorCode code) {
+    public BusinessException(DomainErrorCode code) {
         super(code.name());
         this.code = code;
     }

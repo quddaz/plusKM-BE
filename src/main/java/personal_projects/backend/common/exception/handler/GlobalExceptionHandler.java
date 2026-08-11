@@ -1,5 +1,6 @@
 package personal_projects.backend.common.exception.handler;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -10,14 +11,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import personal_projects.backend.domain.bookmark.exception.BookmarkNotFoundException;
-import personal_projects.backend.domain.medicalrecord.exception.MedicalRecordNotFoundException;
-import personal_projects.backend.domain.auth.exception.UnsupportedOAuthProviderException;
-import personal_projects.backend.domain.auth.exception.InvalidRefreshTokenException;
-import personal_projects.backend.domain.place.exception.PlaceNotFoundException;
-import personal_projects.backend.domain.user.exception.UserNotFoundException;
-import personal_projects.backend.domain.place.importer.exception.PlaceImportForbiddenException;
-import personal_projects.backend.domain.place.importer.exception.PlaceImportException;
 import personal_projects.backend.common.response.ErrorResponse;
 import personal_projects.backend.common.exception.BusinessException;
 import personal_projects.backend.common.exception.DomainErrorCode;
@@ -32,34 +25,14 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     private final MessageSource messageSource;
+    private final DomainErrorHttpMapper domainErrorHttpMapper;
 
-    @ExceptionHandler({
-        PlaceNotFoundException.class,
-        MedicalRecordNotFoundException.class,
-        BookmarkNotFoundException.class,
-        UserNotFoundException.class
-    })
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFound(BusinessException exception) {
-        return toErrorResponse(exception);
-    }
-
-    @ExceptionHandler({InvalidRefreshTokenException.class, UnsupportedOAuthProviderException.class})
-    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
-    public ErrorResponse handleUnsupportedAuthRequest(BusinessException exception) {
-        return toErrorResponse(exception);
-    }
-
-    @ExceptionHandler(PlaceImportForbiddenException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ErrorResponse handlePlaceImportForbidden(BusinessException exception) {
-        return toErrorResponse(exception);
-    }
-
-    @ExceptionHandler(PlaceImportException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handlePlaceImportFailure(BusinessException exception) {
-        log.error("Place import failed", exception);
+    @ExceptionHandler(BusinessException.class)
+    public ErrorResponse handleBusinessException(
+        BusinessException exception,
+        HttpServletResponse response
+    ) {
+        response.setStatus(domainErrorHttpMapper.statusOf(exception.code()).value());
         return toErrorResponse(exception);
     }
 

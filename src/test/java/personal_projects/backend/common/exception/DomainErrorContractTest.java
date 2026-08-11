@@ -22,7 +22,7 @@ class DomainErrorContractTest {
 
     @Test
     void businessException_도메인에러코드만보관한다() {
-        BusinessException exception = new TestBusinessException(PlaceErrorCode.PLACE_NOT_FOUND);
+        BusinessException exception = new BusinessException(PlaceErrorCode.PLACE_NOT_FOUND);
 
         assertEquals(PlaceErrorCode.PLACE_NOT_FOUND, exception.code());
         assertEquals("PLACE_NOT_FOUND", exception.getMessage());
@@ -51,9 +51,4 @@ class DomainErrorContractTest {
         assertEquals(errors, response.errors());
     }
 
-    private static final class TestBusinessException extends BusinessException {
-        private TestBusinessException(DomainErrorCode code) {
-            super(code);
-        }
-    }
 }
