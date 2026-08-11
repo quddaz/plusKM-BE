@@ -1,14 +1,15 @@
 package personal_projects.backend.domain.place.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import personal_projects.backend.domain.oauth.dto.CustomOAuth2User;
-import personal_projects.backend.domain.place.dto.request.SearchPlaceRequest;
-import personal_projects.backend.domain.place.service.PlaceMongoService;
+import personal_projects.backend.domain.auth.dto.AuthenticatedUserPrincipal;
+import personal_projects.backend.domain.place.dto.request.NearbyPlaceSearchRequest;
+import personal_projects.backend.domain.place.dto.response.BookmarkedPlacesResponse;
+import personal_projects.backend.domain.place.dto.response.PlaceDetailResponse;
+import personal_projects.backend.domain.place.dto.response.NearbyPlacesResponse;
 import personal_projects.backend.domain.place.service.PlaceService;
-import personal_projects.backend.global.dto.ResponseTemplate;
 
 @RestController
 @RequestMapping("/places")
@@ -16,34 +17,29 @@ import personal_projects.backend.global.dto.ResponseTemplate;
 public class PlaceController {
 
     private final PlaceService placeService;
-    private final PlaceMongoService placeMongoService;
-
-    /* MySQL을 사용하는 구버전
-    @PostMapping("/buffer")
-    public ResponseTemplate<?> getPlacesWithinBuffer(
-        @RequestBody SearchPlaceRequest searchPlaceRequest) {
-        return ResponseTemplate.from(placeService.getPlacesWithinBuffer(searchPlaceRequest));
-    }
-    */
 
     @PostMapping("/search")
-    public ResponseEntity<?> getPlacesWithinBufferMongo(
-        @RequestBody SearchPlaceRequest searchPlaceRequest) {
-        return ResponseEntity
-            .ok(ResponseTemplate.from(placeMongoService.getPlacesWithinBuffer(searchPlaceRequest)));
+    @ResponseStatus(HttpStatus.OK)
+    public NearbyPlacesResponse findNearbyPlaces(
+        @RequestBody NearbyPlaceSearchRequest searchPlaceRequest) {
+        return NearbyPlacesResponse.from(placeService.findNearbyPlaces(searchPlaceRequest));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getPlaceDetail(@PathVariable(name = "id") long id,
-                                            @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
-        return ResponseEntity
-            .ok(ResponseTemplate.from(placeService.findPlaceDetailByPlaceId(id, customOAuth2User.getUserId())));
+    @ResponseStatus(HttpStatus.OK)
+    public PlaceDetailResponse getPlaceDetail(
+        @PathVariable(name = "id") long id,
+        @AuthenticationPrincipal AuthenticatedUserPrincipal principal
+    ) {
+        return placeService.findPlaceDetail(id, principal.getUserId());
     }
 
     @GetMapping("/bookmark")
-    public ResponseEntity<?> getBookMarkPlaces(
-        @AuthenticationPrincipal CustomOAuth2User customOAuth2User) {
-        return ResponseEntity
-            .ok(ResponseTemplate.from(placeService.findBookMarkPlacesByUserId(customOAuth2User.getUserId())));
+    @ResponseStatus(HttpStatus.OK)
+    public BookmarkedPlacesResponse getBookmarkedPlaces(
+        @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        return BookmarkedPlacesResponse.from(
+            placeService.findBookmarkedPlacesByUserId(principal.getUserId())
+        );
     }
 }

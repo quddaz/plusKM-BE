@@ -3,15 +3,10 @@ spring:
     active: local
 
   datasource:
-    url: jdbc:mariadb://localhost:3306/myapp_local
+    url: jdbc:mysql://localhost:3306/myapp_local
     username: local_user
     password: local_password
-    driver-class-name: org.mariadb.jdbc.Driver
-
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/myapp_local
-      auto-index-creation: true
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
