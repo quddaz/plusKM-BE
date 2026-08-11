@@ -21,17 +21,14 @@ jobs:
         run: |
           if [[ "$BRANCH_NAME" == "develop" && "$BASE_BRANCH" == "main" ]]; then
             echo "Skipping feature branch policy for develop -> main integration PR."
-            exit 0
-          fi
-
-          if [[ ! "$BRANCH_NAME" =~ ^(feat|fix)/[0-9]+/[[:alnum:]가-힣][[:alnum:]가-힣-]*$ ]]; then
+          elif [[ ! "$BRANCH_NAME" =~ ^(feat|fix)/[0-9]+/[[:alnum:]가-힣][[:alnum:]가-힣-]*$ ]]; then
             echo "Invalid branch name: $BRANCH_NAME"
             echo "Expected: feat/{issue-number}/{name} or fix/{issue-number}/{name}"
             exit 1
           fi
 
-          if ! printf '%s' "$PR_BODY" | grep -Eiq '(closes|fixes|resolves)[[:space:]]+#[0-9]+'; then
-            echo 'PR body must contain Closes #N, Fixes #N, or Resolves #N.'
+          if ! printf '%s' "$PR_BODY" | grep -Eiq '(closes|fixes|resolves|refs)[[:space:]]+#[0-9]+'; then
+            echo 'PR body must contain Closes #N, Fixes #N, Resolves #N, or Refs #N.'
             exit 1
           fi
 
