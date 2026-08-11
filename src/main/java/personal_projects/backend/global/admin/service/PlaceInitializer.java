@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import personal_projects.backend.domain.place.domain.Place;
 import personal_projects.backend.domain.place.domain.enumType.Place_type;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
-import personal_projects.backend.domain.place.repository.bulk.PlaceBulkRepository;
 import personal_projects.backend.global.admin.CsvProperties;
 
 import java.io.InputStream;
@@ -26,7 +25,6 @@ public class PlaceInitializer{
 
     private final PlaceRepository placeRepository;
     private final GeometryFactory geometryFactory;
-    private final PlaceBulkRepository placeBulkRepository;
     private final CsvProperties csvProperties;
 
 
@@ -141,7 +139,7 @@ public class PlaceInitializer{
             .collect(Collectors.toList());
 
         if (!toSave.isEmpty()) {
-            placeBulkRepository.batchInsertPlaces(toSave);
+            placeRepository.batchUpsert(toSave);
         }
     }
 

@@ -9,7 +9,6 @@ import personal_projects.backend.domain.place.dto.request.SearchPlaceRequest;
 import personal_projects.backend.domain.place.dto.response.BookmarkedPlacesResponse;
 import personal_projects.backend.domain.place.dto.response.SearchDetailPlaceResponse;
 import personal_projects.backend.domain.place.dto.response.SearchPlacesResponse;
-import personal_projects.backend.domain.place.service.PlaceMongoService;
 import personal_projects.backend.domain.place.service.PlaceService;
 
 @RestController
@@ -18,13 +17,12 @@ import personal_projects.backend.domain.place.service.PlaceService;
 public class PlaceController {
 
     private final PlaceService placeService;
-    private final PlaceMongoService placeMongoService;
 
     @PostMapping("/search")
     @ResponseStatus(HttpStatus.OK)
-    public SearchPlacesResponse getPlacesWithinBufferMongo(
+    public SearchPlacesResponse getPlacesWithinBuffer(
         @RequestBody SearchPlaceRequest searchPlaceRequest) {
-        return SearchPlacesResponse.from(placeMongoService.getPlacesWithinBuffer(searchPlaceRequest));
+        return SearchPlacesResponse.from(placeService.getPlacesWithinBuffer(searchPlaceRequest));
     }
 
     @GetMapping("/{id}")
