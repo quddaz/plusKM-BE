@@ -1,11 +1,11 @@
 package personal_projects.backend.domain.user.exception;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import personal_projects.backend.global.exception.BusinessException;
 import personal_projects.backend.global.exception.errorCode.ErrorCode;
 
-@Getter
-@RequiredArgsConstructor
-public class UserNotFoundException extends RuntimeException {
-    private final ErrorCode errorCode;
+public class UserNotFoundException extends BusinessException {
+
+    public UserNotFoundException(ErrorCode errorCode) {
+        super(errorCode);
+    }
 }

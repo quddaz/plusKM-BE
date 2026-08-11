@@ -1,11 +1,11 @@
 package personal_projects.backend.domain.place.exception;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import personal_projects.backend.global.exception.BusinessException;
 import personal_projects.backend.global.exception.errorCode.ErrorCode;
 
-@Getter
-@RequiredArgsConstructor
-public class PlaceNotFoundException extends RuntimeException{
-    private final ErrorCode errorCode;
+public class PlaceNotFoundException extends BusinessException {
+
+    public PlaceNotFoundException(ErrorCode errorCode) {
+        super(errorCode);
+    }
 }
