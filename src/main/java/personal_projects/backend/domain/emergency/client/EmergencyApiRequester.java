@@ -1,5 +1,6 @@
 package personal_projects.backend.domain.emergency.client;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.URLDecoder;
@@ -11,6 +12,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EmergencyApiRequester {
+
+    private static final String FACILITY_PATH = "/getEgytListInfoInqire";
+    private static final int SUCCESS_STATUS_CODE = 200;
+
     private final EmergencyApiProperties properties;
     private final HttpClient httpClient;
 
@@ -20,22 +25,43 @@ public class EmergencyApiRequester {
     }
 
     public byte[] requestFacilities() {
+        HttpRequest request = createRequest(createFacilityUri());
+        HttpResponse<byte[]> response = send(request);
+        validate(response);
+        return response.body();
+    }
+
+    private URI createFacilityUri() {
+        String query = "?serviceKey=%s&pageNo=1&numOfRows=1000".formatted(encodeServiceKey());
+        return URI.create(properties.baseUrl() + FACILITY_PATH + query);
+    }
+
+    private String encodeServiceKey() {
+        String encodedKey = properties.serviceKey().trim().replace("+", "%2B");
+        String decodedKey = URLDecoder.decode(encodedKey, StandardCharsets.UTF_8);
+        return URLEncoder.encode(decodedKey, StandardCharsets.UTF_8);
+    }
+
+    private HttpRequest createRequest(URI uri) {
+        return HttpRequest.newBuilder(uri)
+            .timeout(properties.timeout())
+            .GET()
+            .build();
+    }
+
+    private HttpResponse<byte[]> send(HttpRequest request) {
         try {
-            String decodedKey = URLDecoder.decode(
-                properties.serviceKey().trim().replace("+", "%2B"), StandardCharsets.UTF_8);
-            String serviceKey = URLEncoder.encode(decodedKey, StandardCharsets.UTF_8);
-            URI uri = URI.create(properties.baseUrl() + "/getEgytListInfoInqire?serviceKey=" + serviceKey
-                + "&pageNo=1&numOfRows=1000");
-            HttpRequest request = HttpRequest.newBuilder(uri).timeout(properties.timeout()).GET().build();
-            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            if (response.statusCode() != 200) {
-                throw new IllegalStateException("응급실 API 요청에 실패했습니다.");
-            }
-            return response.body();
+            return httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("응급실 API 요청에 실패했습니다.");
-        } catch (Exception exception) {
+        } catch (IOException exception) {
+            throw new IllegalStateException("응급실 API 요청에 실패했습니다.");
+        }
+    }
+
+    private void validate(HttpResponse<byte[]> response) {
+        if (response.statusCode() != SUCCESS_STATUS_CODE) {
             throw new IllegalStateException("응급실 API 요청에 실패했습니다.");
         }
     }
