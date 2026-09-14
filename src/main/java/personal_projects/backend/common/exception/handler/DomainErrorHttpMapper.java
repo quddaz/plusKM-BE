@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import personal_projects.backend.common.exception.DomainErrorCode;
 import personal_projects.backend.common.exception.code.CommonErrorCode;
 import personal_projects.backend.domain.auth.exception.code.AuthErrorCode;
-import personal_projects.backend.domain.place.exception.code.PlaceErrorCode;
+import personal_projects.backend.domain.emergency.exception.code.EmergencyErrorCode;
 import personal_projects.backend.domain.user.exception.code.UserErrorCode;
 
 import java.util.Map;
@@ -21,9 +21,7 @@ public class DomainErrorHttpMapper {
         Map.entry(AuthErrorCode.ACCESS_DENIED, HttpStatus.FORBIDDEN),
         Map.entry(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER, HttpStatus.NOT_ACCEPTABLE),
         Map.entry(AuthErrorCode.INVALID_REFRESH_TOKEN, HttpStatus.NOT_ACCEPTABLE),
-        Map.entry(PlaceErrorCode.PLACE_NOT_FOUND, HttpStatus.NOT_FOUND),
-        Map.entry(PlaceErrorCode.PLACE_IMPORT_FAILED, HttpStatus.INTERNAL_SERVER_ERROR),
-        Map.entry(PlaceErrorCode.PLACE_IMPORT_FORBIDDEN, HttpStatus.FORBIDDEN),
+        Map.entry(EmergencyErrorCode.EMERGENCY_NOT_FOUND, HttpStatus.NOT_FOUND),
         Map.entry(UserErrorCode.USER_NOT_FOUND, HttpStatus.NOT_FOUND),
         Map.entry(UserErrorCode.USER_BIRTH_NOT_FOUND, HttpStatus.NOT_FOUND)
     );

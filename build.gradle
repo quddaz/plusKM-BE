@@ -40,8 +40,6 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	// validation
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	//csv 파일
-	implementation 'com.opencsv:opencsv:5.5.2'
 	//MySQL 공간 좌표
 	implementation 'org.locationtech.jts:jts-core:1.20.0'
 	//swagger

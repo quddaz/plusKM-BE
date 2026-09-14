@@ -45,10 +45,10 @@ cors:
   allowed:
     origins: http://localhost:3000
 
-csv:
-  hospitalPath: src/main/resources/data/hospitals.csv
-  pharmacyPath: src/main/resources/data/pharmacies.csv
-  batchSize: 1000
+emergency:
+  api:
+    service-key: ${EMERGENCY_API_SERVICE_KEY:}
+  sync-delay: 24h
 
 logging:
   file:
