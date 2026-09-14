@@ -5,7 +5,7 @@ const SAMPLE_HOSPITALS = [
   { id: 3, name: "세브란스병원 응급진료센터", address: "서울 서대문구 연세로 50-1", phoneNumber: "02-2228-8888", latitude: 37.5623, longitude: 126.9408 }
 ];
 
-const state = { location: DEFAULT_LOCATION, hospitals: [], map: null, markers: [] };
+const state = { location: DEFAULT_LOCATION, hospitals: [], map: null, markers: [], userMarker: null, route: null };
 const list = document.querySelector("#hospitalList");
 const dataState = document.querySelector("#dataState");
 const locationLabel = document.querySelector("#locationLabel");
@@ -49,9 +49,7 @@ function render() {
 }
 
 function card(hospital) {
-  const destination = `${hospital.longitude},${hospital.latitude},${encodeURIComponent(hospital.name)}`;
-  const route = `https://map.naver.com/p/directions/-/${destination}/-/car`;
-  return `<article class="card"><div class="card-head"><h3>${escapeHtml(hospital.name)}</h3><span class="distance">${hospital.distance.toFixed(1)}km</span></div><p class="address">${escapeHtml(hospital.address)}</p><div class="actions"><a class="call" href="tel:${hospital.phoneNumber}">전화하기</a><a class="route" href="${route}" target="_blank" rel="noreferrer">자동차 길찾기</a></div></article>`;
+  return `<article class="card"><div class="card-head"><h3>${escapeHtml(hospital.name)}</h3><span class="distance">${hospital.distance.toFixed(1)}km</span></div><p class="address">${escapeHtml(hospital.address)}</p><div class="actions"><a class="call" href="tel:${hospital.phoneNumber}">전화하기</a><button class="route" data-route-id="${hospital.id}">지도에서 길찾기</button></div></article>`;
 }
 
 function escapeHtml(value) {
@@ -62,7 +60,17 @@ function initializeMap() {
   if (!window.naver?.maps) return;
   const center = new naver.maps.LatLng(state.location.latitude, state.location.longitude);
   state.map = new naver.maps.Map("map", { center, zoom: 13, zoomControl: false });
-  new naver.maps.Marker({ position: center, map: state.map });
+  state.userMarker = new naver.maps.Marker({ position: center, map: state.map, title: "출발 위치" });
+  naver.maps.Event.addListener(state.map, "click", event => selectLocation(event.coord));
+}
+
+function selectLocation(coordinate) {
+  state.location = { latitude: coordinate.lat(), longitude: coordinate.lng() };
+  state.userMarker.setPosition(coordinate);
+  clearRoute();
+  locationLabel.textContent = "선택한 위치 기준 10km";
+  updateLocationName();
+  loadHospitals();
 }
 
 function updateLocationName() {
@@ -89,6 +97,38 @@ function renderMarkers(hospitals) {
     position: new naver.maps.LatLng(hospital.latitude, hospital.longitude), map: state.map,
     title: hospital.name
   }));
+}
+
+async function showRoute(hospital) {
+  if (!state.map) return;
+  dataState.textContent = "자동차 경로 확인 중";
+  const parameters = new URLSearchParams({
+    start: `${state.location.longitude},${state.location.latitude}`,
+    goal: `${hospital.longitude},${hospital.latitude}`
+  });
+  try {
+    const response = await fetch(`/api/directions?${parameters}`);
+    if (!response.ok) throw new Error("경로 조회 실패");
+    const route = await response.json();
+    drawRoute(route.path);
+    dataState.textContent = `${Math.round(route.distance / 100) / 10}km · 약 ${Math.ceil(route.duration / 60000)}분`;
+  } catch (error) {
+    dataState.textContent = "자동차 경로를 불러오지 못했어요";
+  }
+}
+
+function drawRoute(path) {
+  clearRoute();
+  const coordinates = path.map(([longitude, latitude]) => new naver.maps.LatLng(latitude, longitude));
+  state.route = new naver.maps.Polyline({
+    map: state.map, path: coordinates, strokeColor: "#ef3325", strokeWeight: 6, strokeOpacity: 0.9
+  });
+  state.map.fitBounds(state.route.getBounds(), { top: 45, right: 30, bottom: 45, left: 30 });
+}
+
+function clearRoute() {
+  if (state.route) state.route.setMap(null);
+  state.route = null;
 }
 
 function locate() {
@@ -127,5 +167,11 @@ function useDefaultLocation(message) {
 
 document.querySelector("#locateButton").addEventListener("click", locate);
 document.querySelector("#refreshButton").addEventListener("click", loadHospitals);
+list.addEventListener("click", event => {
+  const button = event.target.closest("[data-route-id]");
+  if (!button) return;
+  const hospital = state.hospitals.find(item => String(item.id) === button.dataset.routeId);
+  if (hospital) showRoute(hospital);
+});
 locate();
 setInterval(loadHospitals, 5000);
