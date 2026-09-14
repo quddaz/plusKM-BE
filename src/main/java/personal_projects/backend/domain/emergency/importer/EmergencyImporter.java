@@ -27,39 +27,71 @@ public class EmergencyImporter {
     @Transactional
     public void importAll() {
         List<EmergencyFacilityData> facilities = apiClient.fetchFacilities();
-        Set<String> hpids = facilities.stream()
-            .map(EmergencyFacilityData::hpid)
-            .collect(Collectors.toSet());
-        List<Emergency> existing = repository.findAllActive();
-        existing.stream()
-            .filter(emergency -> !hpids.contains(emergency.getHpid()))
-            .forEach(Emergency::deactivate);
-        Map<String, Emergency> existingByHpid = existing.stream()
-            .filter(emergency -> emergency.getHpid() != null)
-            .collect(Collectors.toMap(Emergency::getHpid, Function.identity()));
-        List<Emergency> updated = facilities.stream()
-            .map(facility -> toEmergency(facility, existingByHpid.get(facility.hpid())))
-            .toList();
+        List<Emergency> existingEmergencies = repository.findAllActive();
 
-        repository.saveAll(existing);
-        repository.saveAll(updated);
+        deactivateMissingEmergencies(existingEmergencies, extractHpids(facilities));
+        List<Emergency> importedEmergencies = mapEmergencies(facilities, existingEmergencies);
+
+        repository.saveAll(existingEmergencies);
+        repository.saveAll(importedEmergencies);
     }
 
-    private Emergency toEmergency(EmergencyFacilityData facility, Emergency existing) {
-        Point coordinate = geometryFactory.createPoint(
-            new Coordinate(facility.longitude(), facility.latitude())
-        );
-        coordinate.setSRID(4326);
-        Emergency emergency = existing == null
-            ? Emergency.create(
-                facility.hpid(),
-                facility.name(),
-                facility.address(),
-                facility.phoneNumber(),
-                coordinate
-            )
-            : existing;
+    private Set<String> extractHpids(List<EmergencyFacilityData> facilities) {
+        return facilities.stream()
+            .map(EmergencyFacilityData::hpid)
+            .collect(Collectors.toSet());
+    }
+
+    private void deactivateMissingEmergencies(List<Emergency> emergencies, Set<String> importedHpids) {
+        emergencies.stream()
+            .filter(emergency -> !importedHpids.contains(emergency.getHpid()))
+            .forEach(Emergency::deactivate);
+    }
+
+    private List<Emergency> mapEmergencies(
+        List<EmergencyFacilityData> facilities,
+        List<Emergency> existingEmergencies
+    ) {
+        Map<String, Emergency> existingByHpid = indexByHpid(existingEmergencies);
+        return facilities.stream()
+            .map(facility -> mapEmergency(facility, existingByHpid.get(facility.hpid())))
+            .toList();
+    }
+
+    private Map<String, Emergency> indexByHpid(List<Emergency> emergencies) {
+        return emergencies.stream()
+            .filter(emergency -> emergency.getHpid() != null)
+            .collect(Collectors.toMap(Emergency::getHpid, Function.identity()));
+    }
+
+    private Emergency mapEmergency(EmergencyFacilityData facility, Emergency existing) {
+        Point coordinate = createCoordinate(facility);
+        Emergency emergency = findOrCreate(facility, existing, coordinate);
         emergency.update(facility.name(), facility.address(), facility.phoneNumber(), coordinate);
         return emergency;
+    }
+
+    private Emergency findOrCreate(
+        EmergencyFacilityData facility,
+        Emergency existing,
+        Point coordinate
+    ) {
+        if (existing != null) {
+            return existing;
+        }
+        return Emergency.create(
+            facility.hpid(),
+            facility.name(),
+            facility.address(),
+            facility.phoneNumber(),
+            coordinate
+        );
+    }
+
+    private Point createCoordinate(EmergencyFacilityData facility) {
+        Coordinate coordinate = new Coordinate(facility.longitude(), facility.latitude());
+        Point point = geometryFactory.createPoint(coordinate);
+        point.setSRID(4326);
+        return point;
     }
 }
