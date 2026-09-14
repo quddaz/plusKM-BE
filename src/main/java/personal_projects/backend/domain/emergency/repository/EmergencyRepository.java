@@ -1,7 +1,6 @@
 package personal_projects.backend.domain.emergency.repository;
 
 import personal_projects.backend.domain.emergency.entity.Emergency;
-import personal_projects.backend.domain.emergency.type.EmergencySearchType;
 import personal_projects.backend.domain.emergency.dto.response.EmergencyDetailResponse;
 import personal_projects.backend.domain.emergency.dto.response.NearbyEmergencyResponse;
 
@@ -19,8 +18,7 @@ public interface EmergencyRepository {
     List<NearbyEmergencyResponse> findNearbyEmergencies(
         double longitude,
         double latitude,
-        double radiusKilometers,
-        EmergencySearchType searchType
+        double radiusKilometers
     );
 
     EmergencyDetailResponse findEmergencyDetail(Long emergencyId);

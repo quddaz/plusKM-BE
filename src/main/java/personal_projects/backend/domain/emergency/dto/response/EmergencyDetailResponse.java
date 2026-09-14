@@ -7,7 +7,6 @@ public record EmergencyDetailResponse(
     Long id,
     String name,
     String address,
-    String phoneNumber,
-    String emergencyType
+    String phoneNumber
 ) {
 }

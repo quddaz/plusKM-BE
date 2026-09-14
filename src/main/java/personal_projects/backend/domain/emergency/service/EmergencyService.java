@@ -28,8 +28,7 @@ public class EmergencyService {
         return emergencyRepository.findNearbyEmergencies(
             request.longitude(),
             request.latitude(),
-            request.radiusKilometers(),
-            request.searchType()
+            request.radiusKilometers()
         );
     }
 

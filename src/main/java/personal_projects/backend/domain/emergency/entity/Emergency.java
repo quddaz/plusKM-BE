@@ -6,10 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
-import personal_projects.backend.domain.emergency.type.EmergencyType;
-
-
-
 @Entity
 @Builder
 @Getter
@@ -33,10 +29,6 @@ public class Emergency {
 
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "emergency_type")
-    private EmergencyType emergencyType;
-
     private String address;
 
     @Column(name = "tel")
@@ -49,7 +41,7 @@ public class Emergency {
 
     public static Emergency create(String hpid, String name, String address, String phoneNumber, Point coordinate) {
         return Emergency.builder().hpid(hpid).name(name).address(address).phoneNumber(phoneNumber)
-            .emergencyType(EmergencyType.종합병원).active(true).coordinate(coordinate).build();
+            .active(true).coordinate(coordinate).build();
     }
 
     public void update(String name, String address, String phoneNumber, Point coordinate) {

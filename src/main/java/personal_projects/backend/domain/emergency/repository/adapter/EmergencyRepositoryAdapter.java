@@ -3,7 +3,6 @@ package personal_projects.backend.domain.emergency.repository.adapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import personal_projects.backend.domain.emergency.entity.Emergency;
-import personal_projects.backend.domain.emergency.type.EmergencySearchType;
 import personal_projects.backend.domain.emergency.dto.response.EmergencyDetailResponse;
 import personal_projects.backend.domain.emergency.dto.response.NearbyEmergencyResponse;
 import personal_projects.backend.domain.emergency.repository.EmergencyRepository;
@@ -39,14 +38,12 @@ public class EmergencyRepositoryAdapter implements EmergencyRepository {
     public List<NearbyEmergencyResponse> findNearbyEmergencies(
         double longitude,
         double latitude,
-        double radiusKilometers,
-        EmergencySearchType searchType
+        double radiusKilometers
     ) {
         return jdbcRepository.findNearbyEmergencies(
             longitude,
             latitude,
-            radiusKilometers,
-            searchType
+            radiusKilometers
         );
     }
 

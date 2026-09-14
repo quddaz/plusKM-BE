@@ -4,11 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import personal_projects.backend.domain.emergency.entity.Emergency;
-import personal_projects.backend.domain.emergency.type.EmergencySearchType;
 import personal_projects.backend.domain.emergency.dto.response.EmergencyDetailResponse;
 import personal_projects.backend.domain.emergency.dto.response.NearbyEmergencyResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -20,32 +18,21 @@ public class EmergencyJdbcRepository {
     public List<NearbyEmergencyResponse> findNearbyEmergencies(
         double longitude,
         double latitude,
-        double radiusKilometers,
-        EmergencySearchType searchType
+        double radiusKilometers
     ) {
         double latitudeDistance = radiusKilometers / 111.32;
         double longitudeDistance = radiusKilometers / (111.32 * Math.cos(Math.toRadians(latitude)));
         String polygon = createPolygon(longitude, latitude, longitudeDistance, latitudeDistance);
 
-        StringBuilder sql = new StringBuilder("""
+        String sql = """
             SELECT id, name, address, tel AS phone_number,
                    ST_X(coordinate) AS longitude, ST_Y(coordinate) AS latitude
             FROM emergency
             WHERE active = true
               AND ST_Within(coordinate, ST_GeomFromText(?, 4326, 'axis-order=long-lat'))
-            """);
-        List<Object> parameters = new ArrayList<>();
-        parameters.add(polygon);
+            """;
 
-        if (searchType == EmergencySearchType.HOSPITAL) {
-            sql.append(" AND emergency_type <> ?");
-            parameters.add("약국");
-        } else if (searchType == EmergencySearchType.PHARMACY) {
-            sql.append(" AND emergency_type = ?");
-            parameters.add("약국");
-        }
-
-        return jdbcTemplate.query(sql.toString(), (resultSet, rowNumber) ->
+        return jdbcTemplate.query(sql, (resultSet, rowNumber) ->
             new NearbyEmergencyResponse(
                 resultSet.getLong("id"),
                 resultSet.getString("name"),
@@ -53,12 +40,12 @@ public class EmergencyJdbcRepository {
                 resultSet.getString("phone_number"),
                 resultSet.getDouble("longitude"),
                 resultSet.getDouble("latitude")
-            ), parameters.toArray());
+            ), polygon);
     }
 
     public EmergencyDetailResponse findEmergencyDetail(Long emergencyId) {
         String sql = """
-            SELECT p.id, p.name, p.address, p.tel AS phone_number, p.emergency_type
+            SELECT p.id, p.name, p.address, p.tel AS phone_number
             FROM emergency p
             WHERE p.id = ?
             """;
@@ -71,8 +58,7 @@ public class EmergencyJdbcRepository {
                 resultSet.getLong("id"),
                 resultSet.getString("name"),
                 resultSet.getString("address"),
-                resultSet.getString("phone_number"),
-                resultSet.getString("emergency_type")
+                resultSet.getString("phone_number")
             );
         }, emergencyId);
     }

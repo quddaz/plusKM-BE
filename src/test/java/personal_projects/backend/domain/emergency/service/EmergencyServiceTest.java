@@ -11,7 +11,6 @@ import personal_projects.backend.domain.emergency.dto.response.EmergencyDetailRe
 import personal_projects.backend.domain.emergency.entity.Emergency;
 import personal_projects.backend.common.exception.BusinessException;
 import personal_projects.backend.domain.emergency.repository.EmergencyRepository;
-import personal_projects.backend.domain.emergency.type.EmergencyType;
 
 import java.util.Optional;
 
@@ -34,7 +33,6 @@ class EmergencyServiceTest {
         Emergency emergency = Emergency.builder()
             .id(1L)
             .name("테스트 장소")
-            .emergencyType(EmergencyType.병원)
             .address("서울 강남구")
             .phoneNumber("02-123-4567")
             .coordinate(new GeometryFactory().createPoint(new Coordinate(37.5665, 126.9780)))
@@ -63,7 +61,6 @@ class EmergencyServiceTest {
             .name("테스트 장소")
             .address("서울 강남구")
             .phoneNumber("02-123-4567")
-            .emergencyType("병원")
             .build();
 
         when(emergencyRepository.findEmergencyDetail(1L)).thenReturn(response);
@@ -73,6 +70,5 @@ class EmergencyServiceTest {
         assertNotNull(result);
         assertEquals(1L, result.id());
         assertEquals("테스트 장소", result.name());
-        assertEquals("병원", result.emergencyType());
     }
 }
