@@ -5,9 +5,7 @@ import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserServ
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import personal_projects.backend.domain.auth.dto.AuthenticatedUserPrincipal;
 import personal_projects.backend.domain.auth.dto.social.GoogleOAuth2UserInfo;
 import personal_projects.backend.domain.auth.dto.social.OAuth2UserInfo;
@@ -35,10 +33,7 @@ public class OAuth2LoginUserService extends DefaultOAuth2UserService {
     private OAuth2UserInfo resolveUserInfo(String registrationId, Map<String, Object> attributes) {
         return switch (registrationId) {
             case "google" -> new GoogleOAuth2UserInfo(attributes);
-            default -> throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "지원하지 않는 OAuth 제공자입니다."
-            );
+            default -> throw new IllegalArgumentException("지원하지 않는 OAuth 제공자입니다.");
         };
     }
 

@@ -3,9 +3,8 @@ package personal_projects.backend.domain.auth.service;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import personal_projects.backend.domain.auth.token.JwtTokenProvider;
 import personal_projects.backend.domain.user.entity.User;
 import personal_projects.backend.domain.user.type.Role;
@@ -21,7 +20,7 @@ public class TokenService {
     public void reissueAccessToken(String refreshToken, HttpServletResponse response) {
 
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 리프레시 토큰입니다.");
+            throw new BadCredentialsException("유효하지 않은 리프레시 토큰입니다.");
         }
 
         User user = jwtTokenProvider.resolveUser(refreshToken);
