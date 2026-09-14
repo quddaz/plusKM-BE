@@ -8,8 +8,6 @@ public record PlaceDetailResponse(
     String name,
     String address,
     String phoneNumber,
-    String placeType,
-
-    boolean bookmarked
+    String placeType
 ) {
 }

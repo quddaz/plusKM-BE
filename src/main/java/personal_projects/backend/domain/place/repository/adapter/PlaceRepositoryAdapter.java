@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import personal_projects.backend.domain.place.entity.Place;
 import personal_projects.backend.domain.place.type.PlaceSearchType;
-import personal_projects.backend.domain.place.dto.response.BookmarkedPlaceResponse;
 import personal_projects.backend.domain.place.dto.response.PlaceDetailResponse;
 import personal_projects.backend.domain.place.dto.response.NearbyPlaceResponse;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
@@ -62,12 +61,7 @@ public class PlaceRepositoryAdapter implements PlaceRepository {
     }
 
     @Override
-    public PlaceDetailResponse findPlaceDetail(Long placeId, Long userId) {
-        return jdbcRepository.findPlaceDetail(placeId, userId);
-    }
-
-    @Override
-    public List<BookmarkedPlaceResponse> findBookmarkedPlacesByUserId(Long userId) {
-        return jdbcRepository.findBookmarkedPlacesByUserId(userId);
+    public PlaceDetailResponse findPlaceDetail(Long placeId) {
+        return jdbcRepository.findPlaceDetail(placeId);
     }
 }

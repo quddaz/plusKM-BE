@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import personal_projects.backend.domain.place.entity.Place;
 import personal_projects.backend.domain.place.type.PlaceSearchType;
-import personal_projects.backend.domain.place.dto.response.BookmarkedPlaceResponse;
 import personal_projects.backend.domain.place.dto.response.PlaceDetailResponse;
 import personal_projects.backend.domain.place.dto.response.NearbyPlaceResponse;
 
@@ -59,14 +58,9 @@ public class PlaceJdbcRepository {
             ), parameters.toArray());
     }
 
-    public PlaceDetailResponse findPlaceDetail(Long placeId, Long userId) {
+    public PlaceDetailResponse findPlaceDetail(Long placeId) {
         String sql = """
-            SELECT p.id, p.name, p.address, p.tel AS phone_number, p.place_type,
-                   EXISTS(
-                       SELECT 1
-                       FROM book_mark b
-                       WHERE b.place_id = p.id AND b.user_id = ?
-                   ) AS bookmarked
+            SELECT p.id, p.name, p.address, p.tel AS phone_number, p.place_type
             FROM place p
             WHERE p.id = ?
             """;
@@ -80,28 +74,9 @@ public class PlaceJdbcRepository {
                 resultSet.getString("name"),
                 resultSet.getString("address"),
                 resultSet.getString("phone_number"),
-                resultSet.getString("place_type"),
-                resultSet.getBoolean("bookmarked")
-            );
-        }, userId, placeId);
-    }
-
-    public List<BookmarkedPlaceResponse> findBookmarkedPlacesByUserId(Long userId) {
-        String sql = """
-            SELECT p.id, p.name, p.address, p.tel AS phone_number, p.place_type
-            FROM place p
-            INNER JOIN book_mark b ON b.place_id = p.id
-            WHERE b.user_id = ?
-            """;
-
-        return jdbcTemplate.query(sql, (resultSet, rowNumber) ->
-            new BookmarkedPlaceResponse(
-                resultSet.getLong("id"),
-                resultSet.getString("name"),
-                resultSet.getString("address"),
-                resultSet.getString("phone_number"),
                 resultSet.getString("place_type")
-            ), userId);
+            );
+        }, placeId);
     }
 
     public void batchUpsert(List<Place> places) {

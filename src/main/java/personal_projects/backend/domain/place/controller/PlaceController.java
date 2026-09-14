@@ -2,11 +2,8 @@ package personal_projects.backend.domain.place.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import personal_projects.backend.domain.auth.dto.AuthenticatedUserPrincipal;
 import personal_projects.backend.domain.place.dto.request.NearbyPlaceSearchRequest;
-import personal_projects.backend.domain.place.dto.response.BookmarkedPlacesResponse;
 import personal_projects.backend.domain.place.dto.response.PlaceDetailResponse;
 import personal_projects.backend.domain.place.dto.response.NearbyPlacesResponse;
 import personal_projects.backend.domain.place.service.PlaceService;
@@ -28,18 +25,8 @@ public class PlaceController {
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public PlaceDetailResponse getPlaceDetail(
-        @PathVariable(name = "id") long id,
-        @AuthenticationPrincipal AuthenticatedUserPrincipal principal
+        @PathVariable(name = "id") long id
     ) {
-        return placeService.findPlaceDetail(id, principal.getUserId());
-    }
-
-    @GetMapping("/bookmark")
-    @ResponseStatus(HttpStatus.OK)
-    public BookmarkedPlacesResponse getBookmarkedPlaces(
-        @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
-        return BookmarkedPlacesResponse.from(
-            placeService.findBookmarkedPlacesByUserId(principal.getUserId())
-        );
+        return placeService.findPlaceDetail(id);
     }
 }

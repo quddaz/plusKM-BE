@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import personal_projects.backend.domain.place.entity.Place;
 import personal_projects.backend.domain.place.dto.request.NearbyPlaceSearchRequest;
-import personal_projects.backend.domain.place.dto.response.BookmarkedPlaceResponse;
 import personal_projects.backend.domain.place.dto.response.PlaceDetailResponse;
 import personal_projects.backend.domain.place.dto.response.NearbyPlaceResponse;
 import personal_projects.backend.common.exception.BusinessException;
@@ -34,11 +33,7 @@ public class PlaceService {
         );
     }
 
-    public PlaceDetailResponse findPlaceDetail(Long placeId, Long userId) {
-        return placeRepository.findPlaceDetail(placeId, userId);
-    }
-
-    public List<BookmarkedPlaceResponse> findBookmarkedPlacesByUserId(Long userId) {
-        return placeRepository.findBookmarkedPlacesByUserId(userId);
+    public PlaceDetailResponse findPlaceDetail(Long placeId) {
+        return placeRepository.findPlaceDetail(placeId);
     }
 }

@@ -6,11 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
-import personal_projects.backend.domain.bookmark.entity.Bookmark;
-import personal_projects.backend.domain.medicalrecord.entity.MedicalRecord;
 import personal_projects.backend.domain.place.type.PlaceType;
 
-import java.util.List;
 
 
 @Entity
@@ -47,9 +44,4 @@ public class Place {
     @Column(columnDefinition = "POINT")
     private Point coordinate;
 
-    @OneToMany(mappedBy = "place", orphanRemoval = true, cascade = CascadeType.REMOVE)
-    private List<Bookmark> bookmarks;
-
-    @OneToMany(mappedBy = "place", orphanRemoval = true, cascade = CascadeType.REMOVE)
-    private List<MedicalRecord> medicalRecords;
 }
