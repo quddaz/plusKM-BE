@@ -1,16 +1,8 @@
 package personal_projects.backend.domain.user.exception.code;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import personal_projects.backend.common.exception.code.ErrorCode;
+import personal_projects.backend.common.exception.DomainErrorCode;
 
-@Getter
-@RequiredArgsConstructor
-public enum UserErrorCode implements ErrorCode {
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "user not found"),
-    USER_BIRTH_NOT_FOUND(HttpStatus.NOT_FOUND, "user birth not found");
-
-    private final HttpStatus httpStatus;
-    private final String message;
+public enum UserErrorCode implements DomainErrorCode {
+    USER_NOT_FOUND,
+    USER_BIRTH_NOT_FOUND
 }

@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import personal_projects.backend.domain.place.dto.response.BookmarkedPlaceResponse;
 import personal_projects.backend.domain.place.dto.response.PlaceDetailResponse;
 import personal_projects.backend.domain.place.entity.Place;
-import personal_projects.backend.domain.place.exception.PlaceNotFoundException;
+import personal_projects.backend.common.exception.BusinessException;
 import personal_projects.backend.domain.place.repository.PlaceRepository;
 import personal_projects.backend.domain.place.type.PlaceType;
 
@@ -57,7 +57,7 @@ class PlaceServiceTest {
     void findById_존재하지않음_예외() {
         when(placeRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(PlaceNotFoundException.class, () -> placeService.findById(1L));
+        assertThrows(BusinessException.class, () -> placeService.findById(1L));
     }
 
     @Test

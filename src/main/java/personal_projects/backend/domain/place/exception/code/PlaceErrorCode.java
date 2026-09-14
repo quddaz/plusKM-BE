@@ -1,16 +1,9 @@
 package personal_projects.backend.domain.place.exception.code;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import personal_projects.backend.common.exception.code.ErrorCode;
+import personal_projects.backend.common.exception.DomainErrorCode;
 
-@Getter
-@RequiredArgsConstructor
-public enum PlaceErrorCode implements ErrorCode {
-    PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "PLACE not found")
-    ;
-
-    private final HttpStatus httpStatus;
-    private final String message;
+public enum PlaceErrorCode implements DomainErrorCode {
+    PLACE_NOT_FOUND,
+    PLACE_IMPORT_FAILED,
+    PLACE_IMPORT_FORBIDDEN
 }

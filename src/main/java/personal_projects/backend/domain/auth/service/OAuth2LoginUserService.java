@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import personal_projects.backend.domain.auth.dto.AuthenticatedUserPrincipal;
 import personal_projects.backend.domain.auth.dto.social.GoogleOAuth2UserInfo;
 import personal_projects.backend.domain.auth.dto.social.OAuth2UserInfo;
-import personal_projects.backend.domain.auth.exception.UnsupportedOAuthProviderException;
+import personal_projects.backend.common.exception.BusinessException;
 import personal_projects.backend.domain.auth.exception.code.AuthErrorCode;
 import personal_projects.backend.domain.user.entity.User;
 import personal_projects.backend.domain.user.repository.UserRepository;
@@ -35,7 +35,7 @@ public class OAuth2LoginUserService extends DefaultOAuth2UserService {
     private OAuth2UserInfo resolveUserInfo(String registrationId, Map<String, Object> attributes) {
         return switch (registrationId) {
             case "google" -> new GoogleOAuth2UserInfo(attributes);
-            default -> throw new UnsupportedOAuthProviderException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER);
+            default -> throw new BusinessException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER);
         };
     }
 
