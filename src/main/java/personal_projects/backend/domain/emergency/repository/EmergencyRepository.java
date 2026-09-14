@@ -12,8 +12,6 @@ public interface EmergencyRepository {
 
     Optional<Emergency> findById(Long id);
 
-    Optional<Emergency> findByHpid(String hpid);
-
     List<Emergency> findAllActive();
 
     void saveAll(List<Emergency> emergencies);

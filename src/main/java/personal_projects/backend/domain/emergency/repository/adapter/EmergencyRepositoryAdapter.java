@@ -26,11 +26,6 @@ public class EmergencyRepositoryAdapter implements EmergencyRepository {
     }
 
     @Override
-    public Optional<Emergency> findByHpid(String hpid) {
-        return jpaRepository.findByHpid(hpid);
-    }
-
-    @Override
     public List<Emergency> findAllActive() {
         return jpaRepository.findAllByActiveTrue();
     }

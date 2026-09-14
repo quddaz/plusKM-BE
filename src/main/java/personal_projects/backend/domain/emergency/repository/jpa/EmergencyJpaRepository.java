@@ -7,7 +7,5 @@ import java.util.List;
 
 public interface EmergencyJpaRepository extends JpaRepository<Emergency, Long> {
 
-    java.util.Optional<Emergency> findByHpid(String hpid);
-
     List<Emergency> findAllByActiveTrue();
 }

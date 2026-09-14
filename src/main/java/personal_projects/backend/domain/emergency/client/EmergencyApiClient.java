@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EmergencyApiClient {
     private final EmergencyApiRequester requester;
-    private final EmergencyFacilityXmlParser parser;
+    private final EmergencyApiResponseParser parser;
 
     public List<EmergencyFacilityData> fetchFacilities() {
         return parser.parse(requester.requestFacilities());

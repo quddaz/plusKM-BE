@@ -15,8 +15,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EmergencyJdbcRepository {
 
-    private static final int BATCH_SIZE = 1000;
-
     private final JdbcTemplate jdbcTemplate;
 
     public List<NearbyEmergencyResponse> findNearbyEmergencies(
@@ -77,35 +75,6 @@ public class EmergencyJdbcRepository {
                 resultSet.getString("emergency_type")
             );
         }, emergencyId);
-    }
-
-    public void batchUpsert(List<Emergency> emergencies) {
-        if (emergencies.isEmpty()) {
-            return;
-        }
-
-        String sql = """
-            INSERT INTO emergency (name, emergency_type, address, tel, active, coordinate)
-            VALUES (?, ?, ?, ?, ?, ST_GeomFromText(?, 4326, 'axis-order=long-lat'))
-            ON DUPLICATE KEY UPDATE
-                emergency_type = VALUES(emergency_type),
-                address = VALUES(address),
-                tel = VALUES(tel),
-                active = VALUES(active),
-                coordinate = VALUES(coordinate)
-            """;
-
-        jdbcTemplate.batchUpdate(sql, emergencies, BATCH_SIZE, (statement, emergency) -> {
-            statement.setString(1, emergency.getName());
-            statement.setString(2, emergency.getEmergencyType().name());
-            statement.setString(3, emergency.getAddress());
-            statement.setString(4, emergency.getPhoneNumber());
-            statement.setBoolean(5, emergency.isActive());
-            statement.setString(6, "POINT(%f %f)".formatted(
-                emergency.getCoordinate().getX(),
-                emergency.getCoordinate().getY()
-            ));
-        });
     }
 
     private String createPolygon(

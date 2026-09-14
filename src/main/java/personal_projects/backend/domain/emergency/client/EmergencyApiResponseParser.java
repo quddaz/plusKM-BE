@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 @Component
-public class EmergencyFacilityXmlParser {
+public class EmergencyApiResponseParser {
     public List<EmergencyFacilityData> parse(byte[] response) {
         try {
             DocumentBuilderFactory factory = secureFactory();
