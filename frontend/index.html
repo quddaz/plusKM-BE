@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#f4f7f6" />
+  <title>곁 — 가까운 응급실 찾기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="stage">
+    <section class="phone" aria-label="응급실 찾기 앱 미리보기">
+      <div class="speaker" aria-hidden="true"></div>
+      <div class="screen">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">지금 내 곁의 응급실</p>
+            <h1>곁</h1>
+          </div>
+          <button class="icon-button" id="locateButton" aria-label="현재 위치 다시 찾기">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm8.5 2.5h-1.57A7 7 0 0 0 13 5.07V3.5a1 1 0 0 0-2 0v1.57A7 7 0 0 0 5.07 11H3.5a1 1 0 0 0 0 2h1.57A7 7 0 0 0 11 18.93v1.57a1 1 0 0 0 2 0v-1.57A7 7 0 0 0 18.93 13h1.57a1 1 0 0 0 0-2ZM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z"/></svg>
+          </button>
+        </header>
+
+        <section class="hero">
+          <div class="pulse"><span></span></div>
+          <p id="locationLabel">현재 위치를 확인하고 있어요</p>
+          <strong><span id="resultCount">0</span>곳의 응급실</strong>
+          <small>병상 정보는 방문 전 전화로 확인해 주세요.</small>
+        </section>
+
+        <section class="map-wrap" aria-label="주변 응급실 지도">
+          <div id="map"></div>
+          <div class="map-fallback" id="mapFallback">
+            <div class="road road-a"></div><div class="road road-b"></div>
+            <span class="pin pin-user">나</span>
+            <span class="pin pin-hospital p1">H</span>
+            <span class="pin pin-hospital p2">H</span>
+            <span class="pin pin-hospital p3">H</span>
+          </div>
+          <button class="refresh-button" id="refreshButton">↻ 이 지역 다시 검색</button>
+        </section>
+
+        <section class="results">
+          <div class="section-heading">
+            <h2>가까운 순</h2>
+            <span id="dataState">연결 확인 중</span>
+          </div>
+          <div class="hospital-list" id="hospitalList" aria-live="polite"></div>
+        </section>
+
+        <nav class="bottom-nav" aria-label="주요 메뉴">
+          <button class="active"><span>⌖</span>주변 응급실</button>
+          <a href="tel:119"><span>✚</span>119 전화</a>
+        </nav>
+      </div>
+    </section>
+    <aside class="intro">
+      <span class="brand-mark">곁</span>
+      <h2>급한 순간,<br />가장 가까운 도움을.</h2>
+      <p>위치 기반으로 주변 응급실을 찾고<br />전화와 자동차 길찾기까지 바로 연결합니다.</p>
+      <div class="feature-row"><span>01</span><p><b>5초마다</b> 최신 목록 확인</p></div>
+      <div class="feature-row"><span>02</span><p><b>한 번의 선택으로</b> 전화와 길찾기</p></div>
+    </aside>
+  </main>
+  <script>window.APP_CONFIG = { apiBaseUrl: "" };</script>
+  <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=cjtt3s316g"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
