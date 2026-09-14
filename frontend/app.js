@@ -65,6 +65,23 @@ function initializeMap() {
   new naver.maps.Marker({ position: center, map: state.map });
 }
 
+function updateLocationName() {
+  if (!window.naver?.maps?.Service) {
+    locationLabel.textContent = "현재 위치 기준 10km";
+    return;
+  }
+  const coordinate = new naver.maps.LatLng(state.location.latitude, state.location.longitude);
+  naver.maps.Service.reverseGeocode({ coords: coordinate }, (status, response) => {
+    if (status !== naver.maps.Service.Status.OK) {
+      locationLabel.textContent = "현재 위치 기준 10km";
+      return;
+    }
+    const region = response.v2.results[0]?.region;
+    const names = [region?.area1?.name, region?.area2?.name, region?.area3?.name].filter(Boolean);
+    locationLabel.textContent = names.length ? `${names.join(" ")} · 10km` : "현재 위치 기준 10km";
+  });
+}
+
 function renderMarkers(hospitals) {
   if (!state.map || !window.naver?.maps) return;
   state.markers.forEach(marker => marker.setMap(null));
@@ -75,16 +92,37 @@ function renderMarkers(hospitals) {
 }
 
 function locate() {
-  if (!navigator.geolocation) return loadHospitals();
+  if (!navigator.geolocation) {
+    return useDefaultLocation("위치 기능 미지원 · 서울시청 기준 10km");
+  }
   locationLabel.textContent = "현재 위치를 확인하고 있어요";
+  let completed = false;
+  const timeout = setTimeout(() => {
+    if (!completed) useDefaultLocation("위치 확인 지연 · 서울시청 기준 10km");
+    completed = true;
+  }, 6000);
   navigator.geolocation.getCurrentPosition(position => {
+    if (completed) return;
+    completed = true;
+    clearTimeout(timeout);
     state.location = { latitude: position.coords.latitude, longitude: position.coords.longitude };
     locationLabel.textContent = "현재 위치 기준 10km";
-    initializeMap(); loadHospitals();
+    initializeMap();
+    updateLocationName();
+    loadHospitals();
   }, () => {
-    locationLabel.textContent = "서울시청 기준 10km";
-    initializeMap(); loadHospitals();
-  }, { enableHighAccuracy: true, timeout: 6000 });
+    if (completed) return;
+    completed = true;
+    clearTimeout(timeout);
+    useDefaultLocation("위치 권한 없음 · 서울시청 기준 10km");
+  }, { enableHighAccuracy: true, timeout: 5000 });
+}
+
+function useDefaultLocation(message) {
+  state.location = DEFAULT_LOCATION;
+  locationLabel.textContent = message;
+  initializeMap();
+  loadHospitals();
 }
 
 document.querySelector("#locateButton").addEventListener("click", locate);
