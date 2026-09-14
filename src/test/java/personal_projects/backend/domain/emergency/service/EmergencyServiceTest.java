@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import personal_projects.backend.domain.emergency.dto.response.EmergencyDetailResponse;
 import personal_projects.backend.domain.emergency.entity.Emergency;
-import personal_projects.backend.common.exception.BusinessException;
+import org.springframework.web.server.ResponseStatusException;
 import personal_projects.backend.domain.emergency.repository.EmergencyRepository;
 
 import java.util.Optional;
@@ -51,7 +51,7 @@ class EmergencyServiceTest {
     void findById_존재하지않음_예외() {
         when(emergencyRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(BusinessException.class, () -> emergencyService.findById(1L));
+        assertThrows(ResponseStatusException.class, () -> emergencyService.findById(1L));
     }
 
     @Test
