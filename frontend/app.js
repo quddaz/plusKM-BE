@@ -84,8 +84,9 @@ function escapeHtml(value) {
 
 function initializeMap() {
   if (state.map) return updateMapCenter();
+  if (window.L) return initializeFallbackMap();
   if (window.naver?.maps) return initializeNaverMap();
-  initializeFallbackMap();
+  dataState.textContent = "지도를 불러오지 못했어요";
 }
 
 function initializeNaverMap() {
@@ -107,7 +108,7 @@ function initializeFallbackMap() {
   const center = [state.location.latitude, state.location.longitude];
   state.mapProvider = "leaflet";
   state.map = L.map("map", { zoomControl: false }).setView(center, 13);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "&copy; OpenStreetMap" }).addTo(state.map);
+  L.tileLayer("/api/map-tile?z={z}&x={x}&y={y}", { maxZoom: 19, attribution: "&copy; OpenStreetMap" }).addTo(state.map);
   state.userMarker = L.circleMarker(center, { radius: 9, color: "#fff", weight: 3,
     fillColor: "#1769ff", fillOpacity: 1 }).addTo(state.map).bindTooltip("현재 위치");
   state.map.on("click", event => selectLocation(event.latlng));
@@ -256,8 +257,6 @@ list.addEventListener("click", event => {
   if (hospital) showRoute(hospital);
 });
 async function start() {
-  const mapLoaded = await loadNaverMap();
-  if (!mapLoaded) dataState.textContent = "대체 지도 사용 중";
   locate();
 }
 
