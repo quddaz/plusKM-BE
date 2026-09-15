@@ -10,3 +10,10 @@
 .bottom-sheet:not(.expanded) .hospital-list{display:none}
 .bottom-sheet:not(.expanded) .notice{margin-bottom:0}
 @media(max-width:760px){.screen{--sheet-collapsed:max(20%,178px)}.bottom-sheet{height:var(--sheet-collapsed);min-height:0}.refresh-button{bottom:calc(var(--sheet-collapsed) + 14px)}.hospital-detail{bottom:calc(var(--sheet-collapsed) + 10px)}}
+/* Prevent long hospital text from widening the bottom sheet. */
+.bottom-sheet,.hospital-list,.card,.card-head,.actions{min-width:0;max-width:100%}
+.hospital-list,.card{width:100%}
+.card-head{display:grid;grid-template-columns:minmax(0,1fr) auto}
+.card h3,.address{min-width:0;max-width:100%}
+.actions{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)}
+.actions a,.actions button{min-width:0;width:100%}
