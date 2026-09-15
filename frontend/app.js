@@ -96,6 +96,7 @@ function initializeNaverMap() {
     icon: { content: '<div class="current-marker"><span></span></div>', anchor: new naver.maps.Point(13, 13) } });
   naver.maps.Event.addListener(state.map, "click", event => selectLocation(event.coord));
   hideMapFallback();
+  setTimeout(() => naver.maps.Event.trigger(state.map, "resize"), 100);
 }
 
 function initializeFallbackMap() {
@@ -231,9 +232,18 @@ function useDefaultLocation(message) {
   initializeMap(); loadHospitals();
 }
 
-document.querySelector("#locateButton").addEventListener("click", locate);
 document.querySelector("#refreshButton").addEventListener("click", loadHospitals);
 document.querySelector("#myLocationButton").addEventListener("click", locate);
+document.querySelector("#sheetHandle").addEventListener("click", () => {
+  const sheet = document.querySelector("#bottomSheet");
+  sheet.classList.toggle("expanded");
+  setTimeout(resizeMap, 300);
+});
+
+function resizeMap() {
+  if (state.mapProvider === "naver") naver.maps.Event.trigger(state.map, "resize");
+  if (state.mapProvider === "leaflet") state.map.invalidateSize();
+}
 document.querySelector("#radiusSelect").addEventListener("change", event => {
   state.radiusKilometers = Number(event.target.value);
   locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
