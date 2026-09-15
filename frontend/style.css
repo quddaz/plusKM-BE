@@ -17,3 +17,6 @@
 .card h3,.address{min-width:0;max-width:100%}
 .actions{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)}
 .actions a,.actions button{min-width:0;width:100%}
+/* Compact summary height while the hospital list is collapsed. */
+.screen{--sheet-collapsed:120px}
+@media(max-width:760px){.screen{--sheet-collapsed:112px}}
