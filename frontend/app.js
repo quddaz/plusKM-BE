@@ -4,6 +4,39 @@ const list = document.querySelector("#hospitalList");
 const dataState = document.querySelector("#dataState");
 const locationLabel = document.querySelector("#locationLabel");
 const resultCount = document.querySelector("#resultCount");
+const NAVER_MAP_CLIENT_ID = "cjtt3s316g";
+const MAP_LOAD_DELAYS = [0, 1500, 4000];
+
+async function loadNaverMap() {
+  for (let attempt = 0; attempt < MAP_LOAD_DELAYS.length; attempt++) {
+    await wait(MAP_LOAD_DELAYS[attempt]);
+    dataState.textContent = `네이버 지도 연결 중 ${attempt + 1}/${MAP_LOAD_DELAYS.length}`;
+    if (await loadNaverMapScript(attempt)) return true;
+  }
+  return false;
+}
+
+function loadNaverMapScript(attempt) {
+  return new Promise(resolve => {
+    const script = document.createElement("script");
+    let completed = false;
+    const finish = loaded => {
+      if (completed) return;
+      completed = true;
+      if (!loaded) script.remove();
+      resolve(loaded);
+    };
+    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_MAP_CLIENT_ID}&retry=${attempt}`;
+    script.onload = () => finish(Boolean(window.naver?.maps));
+    script.onerror = () => finish(false);
+    document.head.appendChild(script);
+    setTimeout(() => finish(Boolean(window.naver?.maps)), 5000);
+  });
+}
+
+function wait(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
 
 function distanceInKilometers(origin, destination) {
   const toRadians = value => value * Math.PI / 180;
@@ -164,7 +197,9 @@ function useDefaultLocation(message) {
   initializeMap(); loadHospitals();
 }
 
-document.querySelector("#locateButton").addEventListener("click", locate);
+document.querySelector("#locateButton").addEventListener("click", async () => {
+  if (window.naver?.maps || await loadNaverMap()) locate();
+});
 document.querySelector("#refreshButton").addEventListener("click", loadHospitals);
 list.addEventListener("click", event => {
   const button = event.target.closest("[data-route-id]");
@@ -172,5 +207,15 @@ list.addEventListener("click", event => {
   const hospital = state.hospitals.find(item => String(item.id) === button.dataset.routeId);
   if (hospital) showRoute(hospital);
 });
-locate();
+async function start() {
+  const mapLoaded = await loadNaverMap();
+  if (mapLoaded) {
+    locate();
+    return;
+  }
+  locationLabel.textContent = "지도 연결 실패 · 잠시 후 다시 시도해 주세요";
+  loadHospitals();
+}
+
+start();
 setInterval(loadHospitals, 5000);
