@@ -285,7 +285,6 @@ function useDefaultLocation(message) {
   initializeMap(); loadHospitals();
 }
 
-document.querySelector("#refreshButton").addEventListener("click", loadHospitals);
 document.querySelector("#myLocationButton").addEventListener("click", locate);
 document.querySelector("#sheetHandle").addEventListener("click", () => {
   const sheet = document.querySelector("#bottomSheet");

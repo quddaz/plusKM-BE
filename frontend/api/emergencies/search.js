@@ -14,7 +14,7 @@ export default async function handler(request, response) {
   const facilities = items(await apiResponse.text()).map(toEmergency).filter(Boolean)
     .map(emergency => ({ ...emergency, distance: distance({ longitude, latitude }, emergency) }))
     .filter(emergency => emergency.distance <= searchRadius)
-    .sort((first, second) => first.distance - second.distance).slice(0, 30);
+    .sort((first, second) => first.distance - second.distance);
   const availability = await fetchAvailability(facilities, key);
   const emergencies = facilities
     .map(emergency => ({ ...emergency, availability: availability.get(String(emergency.id)) ?? null }))
