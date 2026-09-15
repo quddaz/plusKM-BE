@@ -157,19 +157,25 @@ function renderMarkers(hospitals) {
   state.markers.forEach(marker => state.mapProvider === "naver" ? marker.setMap(null) : marker.remove());
   if (state.mapProvider === "naver") {
     state.markers = hospitals.map(hospital => {
+      const markerStatus = needsVerification(hospital) ? " needs-verification" : "";
       const marker = new naver.maps.Marker({ position: new naver.maps.LatLng(hospital.latitude, hospital.longitude), map: state.map,
-        title: hospital.name, icon: { content: '<div class="hospital-marker"><b>+</b></div>', anchor: new naver.maps.Point(19, 42) } });
+        title: hospital.name, icon: { content: `<div class="hospital-marker${markerStatus}"><b>+</b></div>`, anchor: new naver.maps.Point(19, 42) } });
       naver.maps.Event.addListener(marker, "click", () => selectHospital(hospital));
       return marker;
     });
     return;
   }
   state.markers = hospitals.map(hospital => {
-    const icon = L.divIcon({ className: "marker-shell", html: '<div class="hospital-marker"><b>+</b></div>', iconSize: [38, 46], iconAnchor: [19, 43] });
+    const markerStatus = needsVerification(hospital) ? " needs-verification" : "";
+    const icon = L.divIcon({ className: "marker-shell", html: `<div class="hospital-marker${markerStatus}"><b>+</b></div>`, iconSize: [38, 46], iconAnchor: [19, 43] });
     return L.marker([hospital.latitude, hospital.longitude], { icon }).addTo(state.map)
       .bindTooltip(hospital.name, { direction: "top", offset: [0, -36] })
       .on("click", () => selectHospital(hospital));
   });
+}
+
+function needsVerification(hospital) {
+  return !hospital.availability || hospital.availability.emergencyRoom === null;
 }
 
 function selectHospital(hospital) {

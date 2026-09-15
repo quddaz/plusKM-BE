@@ -20,3 +20,4 @@
 /* Compact summary height while the hospital list is collapsed. */
 .screen{--sheet-collapsed:120px}
 @media(max-width:760px){.screen{--sheet-collapsed:112px}}
+.hospital-marker.needs-verification{background:linear-gradient(145deg,#f6ad48,#e97918);box-shadow:0 5px 14px #8d4b1855}.map-legend{position:absolute;z-index:5;top:calc(125px + env(safe-area-inset-top));left:14px;display:flex;gap:8px;padding:7px 9px;border:1px solid #dce3df;border-radius:11px;background:#fffffff0;color:#59665f;font-size:8px;font-weight:700;box-shadow:0 3px 12px #17241e1f}.map-legend span{display:flex;align-items:center;gap:4px}.map-legend i{width:8px;height:8px;border-radius:50%;background:var(--red)}.map-legend span:last-child i{background:#e97918}
