@@ -6,3 +6,4 @@
 @media(max-width:850px){.preview-phone{display:none}.campaign-logo{display:none}}
 .actions a,.actions button{height:32px;border:0;border-radius:10px;display:grid;place-items:center;text-decoration:none;font:700 10px "Noto Sans KR",sans-serif;cursor:pointer}
 @media(min-width:851px){.stage{justify-content:center}.phone{margin-left:0}}
+.current-marker{width:26px;height:26px;border-radius:50%;background:#1769ff;border:4px solid #fff;box-shadow:0 2px 12px #123c8b88;position:relative}.current-marker span{position:absolute;inset:-9px;border:2px solid #1769ff55;border-radius:50%;animation:pulse 1.8s infinite}.hospital-marker{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:#ef3325;color:#fff;border:3px solid #fff;box-shadow:0 3px 10px #6b17134d;font:bold 19px Arial}
