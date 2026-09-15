@@ -1,5 +1,6 @@
 const DEFAULT_LOCATION = { latitude: 37.5665, longitude: 126.9780 };
-const state = { location: DEFAULT_LOCATION, hospitals: [], map: null, markers: [], userMarker: null, route: null };
+const state = { location: DEFAULT_LOCATION, radiusKilometers: 10, hospitals: [], map: null,
+  mapProvider: null, markers: [], userMarker: null, route: null };
 const list = document.querySelector("#hospitalList");
 const dataState = document.querySelector("#dataState");
 const locationLabel = document.querySelector("#locationLabel");
@@ -52,7 +53,7 @@ async function loadHospitals() {
   try {
     const response = await fetch("/api/emergencies/search", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...state.location, radiusKilometers: 10 })
+      body: JSON.stringify({ ...state.location, radiusKilometers: state.radiusKilometers })
     });
     if (!response.ok) throw new Error("API 연결 실패");
     state.hospitals = (await response.json()).emergencies;
@@ -82,33 +83,60 @@ function escapeHtml(value) {
 }
 
 function initializeMap() {
-  if (!window.naver?.maps) {
-    dataState.textContent = "네이버 지도를 불러오지 못했어요";
-    return;
-  }
-  const center = new naver.maps.LatLng(state.location.latitude, state.location.longitude);
-  if (state.map) {
-    state.map.setCenter(center);
-    state.userMarker.setPosition(center);
-    return;
-  }
-  state.map = new naver.maps.Map("map", { center, zoom: 13, zoomControl: false });
-  state.userMarker = new naver.maps.Marker({
-    position: center,
-    map: state.map,
-    title: "현재 위치",
-    icon: { content: '<div class="current-marker"><span></span></div>', anchor: new naver.maps.Point(13, 13) }
-  });
-  naver.maps.Event.addListener(state.map, "click", event => selectLocation(event.coord));
+  if (state.map) return updateMapCenter();
+  if (window.naver?.maps) return initializeNaverMap();
+  initializeFallbackMap();
 }
 
+function initializeNaverMap() {
+  const center = new naver.maps.LatLng(state.location.latitude, state.location.longitude);
+  state.mapProvider = "naver";
+  state.map = new naver.maps.Map("map", { center, zoom: 13, zoomControl: false });
+  state.userMarker = new naver.maps.Marker({ position: center, map: state.map, title: "현재 위치",
+    icon: { content: '<div class="current-marker"><span></span></div>', anchor: new naver.maps.Point(13, 13) } });
+  naver.maps.Event.addListener(state.map, "click", event => selectLocation(event.coord));
+  hideMapFallback();
+}
+
+function initializeFallbackMap() {
+  if (!window.L) {
+    dataState.textContent = "지도를 불러오지 못했어요";
+    return;
+  }
+  const center = [state.location.latitude, state.location.longitude];
+  state.mapProvider = "leaflet";
+  state.map = L.map("map", { zoomControl: false }).setView(center, 13);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "&copy; OpenStreetMap" }).addTo(state.map);
+  state.userMarker = L.circleMarker(center, { radius: 9, color: "#fff", weight: 3,
+    fillColor: "#1769ff", fillOpacity: 1 }).addTo(state.map).bindTooltip("현재 위치");
+  state.map.on("click", event => selectLocation(event.latlng));
+  hideMapFallback();
+}
+
+function updateMapCenter() {
+  if (state.mapProvider === "naver") {
+    const center = new naver.maps.LatLng(state.location.latitude, state.location.longitude);
+    state.map.setCenter(center); state.userMarker.setPosition(center); return;
+  }
+  const center = [state.location.latitude, state.location.longitude];
+  state.map.setView(center, 13); state.userMarker.setLatLng(center);
+}
+
+function hideMapFallback() { document.querySelector("#mapFallback").style.display = "none"; }
+
 function selectLocation(coordinate) {
-  state.location = { latitude: coordinate.lat(), longitude: coordinate.lng() };
-  state.userMarker.setPosition(coordinate);
+  state.location = coordinateValue(coordinate);
+  if (state.mapProvider === "naver") state.userMarker.setPosition(coordinate);
+  else state.userMarker.setLatLng(coordinate);
   clearRoute();
-  locationLabel.textContent = "선택한 위치 기준 10km";
+  locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
   updateLocationName();
   loadHospitals();
+}
+function coordinateValue(coordinate) {
+  const latitude = typeof coordinate.lat === "function" ? coordinate.lat() : coordinate.lat;
+  const longitude = typeof coordinate.lng === "function" ? coordinate.lng() : coordinate.lng;
+  return { latitude, longitude };
 }
 
 async function updateLocationName() {
@@ -116,21 +144,25 @@ async function updateLocationName() {
     const query = new URLSearchParams({ longitude: state.location.longitude, latitude: state.location.latitude });
     const response = await fetch(`/api/reverse-geocode?${query}`);
     if (!response.ok) throw new Error("지역 조회 실패");
-    locationLabel.textContent = `${(await response.json()).region} · 10km`;
+    locationLabel.textContent = `${(await response.json()).region} · ${state.radiusKilometers}km`;
   } catch (error) {
-    locationLabel.textContent = "선택한 위치 기준 10km";
+    locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
   }
 }
 
 function renderMarkers(hospitals) {
-  if (!state.map || !window.naver?.maps) return;
-  state.markers.forEach(marker => marker.setMap(null));
-  state.markers = hospitals.map(hospital => new naver.maps.Marker({
-    position: new naver.maps.LatLng(hospital.latitude, hospital.longitude),
-    map: state.map,
-    title: hospital.name,
-    icon: { content: '<div class="hospital-marker">+</div>', anchor: new naver.maps.Point(13, 13) }
-  }));
+  if (!state.map) return;
+  state.markers.forEach(marker => state.mapProvider === "naver" ? marker.setMap(null) : marker.remove());
+  if (state.mapProvider === "naver") {
+    state.markers = hospitals.map(hospital => new naver.maps.Marker({
+      position: new naver.maps.LatLng(hospital.latitude, hospital.longitude), map: state.map,
+      title: hospital.name, icon: { content: '<div class="hospital-marker">+</div>', anchor: new naver.maps.Point(13, 13) }
+    }));
+    return;
+  }
+  state.markers = hospitals.map(hospital => L.circleMarker([hospital.latitude, hospital.longitude],
+    { radius: 8, color: "#fff", weight: 2, fillColor: "#ef3325", fillOpacity: 1 }
+  ).addTo(state.map).bindTooltip(hospital.name));
 }
 
 async function showRoute(hospital) {
@@ -152,19 +184,21 @@ async function showRoute(hospital) {
 
 function drawRoute(path) {
   clearRoute();
+  if (state.mapProvider === "leaflet") {
+    const coordinates = path.map(([longitude, latitude]) => [latitude, longitude]);
+    state.route = L.polyline(coordinates, { color: "#ef3325", weight: 7, opacity: 0.9 }).addTo(state.map);
+    state.map.fitBounds(state.route.getBounds(), { padding: [35, 35] });
+    return;
+  }
   const coordinates = path.map(([longitude, latitude]) => new naver.maps.LatLng(latitude, longitude));
-  state.route = new naver.maps.Polyline({
-    map: state.map,
-    path: coordinates,
-    strokeColor: "#ef3325",
-    strokeWeight: 7,
-    strokeOpacity: 0.9
-  });
+  state.route = new naver.maps.Polyline({ map: state.map, path: coordinates,
+    strokeColor: "#ef3325", strokeWeight: 7, strokeOpacity: 0.9 });
   state.map.fitBounds(state.route.getBounds(), { top: 45, right: 35, bottom: 45, left: 35 });
 }
 
 function clearRoute() {
-  if (state.route) state.route.setMap(null);
+  if (state.route && state.mapProvider === "naver") state.route.setMap(null);
+  if (state.route && state.mapProvider === "leaflet") state.route.remove();
   state.route = null;
 }
 
@@ -197,10 +231,14 @@ function useDefaultLocation(message) {
   initializeMap(); loadHospitals();
 }
 
-document.querySelector("#locateButton").addEventListener("click", async () => {
-  if (window.naver?.maps || await loadNaverMap()) locate();
-});
+document.querySelector("#locateButton").addEventListener("click", locate);
 document.querySelector("#refreshButton").addEventListener("click", loadHospitals);
+document.querySelector("#myLocationButton").addEventListener("click", locate);
+document.querySelector("#radiusSelect").addEventListener("change", event => {
+  state.radiusKilometers = Number(event.target.value);
+  locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
+  loadHospitals();
+});
 list.addEventListener("click", event => {
   const button = event.target.closest("[data-route-id]");
   if (!button) return;
@@ -209,12 +247,8 @@ list.addEventListener("click", event => {
 });
 async function start() {
   const mapLoaded = await loadNaverMap();
-  if (mapLoaded) {
-    locate();
-    return;
-  }
-  locationLabel.textContent = "지도 연결 실패 · 잠시 후 다시 시도해 주세요";
-  loadHospitals();
+  if (!mapLoaded) dataState.textContent = "대체 지도 사용 중";
+  locate();
 }
 
 start();

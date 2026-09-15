@@ -6,13 +6,14 @@ export default async function handler(request, response) {
   if (![longitude, latitude, radiusKilometers].every(Number.isFinite)) {
     return response.status(400).json({ message: "위치와 검색 반경이 필요합니다." });
   }
+  const searchRadius = Math.min(Math.max(radiusKilometers, 1), 30);
   const key = decodeURIComponent(process.env.EMERGENCY_API_SERVICE_KEY.replace(/\+/g, "%2B"));
   const query = new URLSearchParams({ serviceKey: key, pageNo: "1", numOfRows: "1000" });
   const apiResponse = await fetch(`${FACILITY_URL}?${query}`);
   if (!apiResponse.ok) return response.status(502).json({ message: "응급실 정보를 가져올 수 없습니다." });
   const emergencies = items(await apiResponse.text()).map(toEmergency).filter(Boolean)
     .map(emergency => ({ ...emergency, distance: distance({ longitude, latitude }, emergency) }))
-    .filter(emergency => emergency.distance <= radiusKilometers)
+    .filter(emergency => emergency.distance <= searchRadius)
     .sort((first, second) => first.distance - second.distance).slice(0, 30)
     .map(({ distance: ignored, ...emergency }) => emergency);
   response.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
