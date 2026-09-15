@@ -21,7 +21,11 @@
             <div class="fallback-grid"></div>
             <p>지도를 준비하고 있어요</p>
           </div>
-          <a class="emergency-call" href="tel:119">119 전화</a>
+          <form class="address-search" id="addressSearch">
+            <span>⌕</span><input id="addressInput" aria-label="주소 검색" placeholder="주소를 검색하세요" autocomplete="street-address" />
+            <button type="submit">검색</button>
+          </form>
+          <a class="emergency-call" href="tel:119">119</a>
           <div class="map-controls">
             <button id="myLocationButton" type="button">⌖ 내 위치</button>
             <label>반경
@@ -32,7 +36,14 @@
               </select>
             </label>
           </div>
-          <button class="refresh-button" id="refreshButton" type="button">↻ 이 위치에서 다시 검색</button>
+          <button class="refresh-button" id="refreshButton" type="button"><span>↻</span> 현재 지도에서 검색</button>
+          <section class="route-guide" id="routeGuide" aria-live="polite">
+            <button id="closeRoute" type="button">×</button>
+            <span class="turn-icon">↑</span>
+            <div><small>자동차 경로</small><strong id="routeDuration">--분</strong><p id="routeDestination"></p></div>
+            <b id="routeDistance"></b>
+          </section>
+          <section class="hospital-detail" id="hospitalDetail" aria-live="polite"></section>
         </section>
         <section class="bottom-sheet" id="bottomSheet">
           <button class="sheet-handle" id="sheetHandle" type="button" aria-label="병원 목록 펼치기"><span></span></button>
