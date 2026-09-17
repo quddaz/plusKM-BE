@@ -193,6 +193,7 @@ function selectHospital(hospital) {
   state.selectedHospital = hospital;
   const availability = hospital.availability;
   const detail = document.querySelector("#hospitalDetail");
+  detail.classList.remove("route-mode");
   detail.innerHTML = `<button class="detail-close" type="button" aria-label="닫기">×</button>
     <div class="detail-head"><div><small>선택한 응급실</small><h2>${escapeHtml(hospital.name)}</h2></div><span>${distanceInKilometers(state.location, hospital).toFixed(1)}km</span></div>
     <p>${escapeHtml(hospital.address)}</p>
@@ -215,7 +216,7 @@ function formatUpdatedAt(value) {
 }
 
 function closeHospitalDetail() {
-  document.querySelector("#hospitalDetail").classList.remove("visible");
+  document.querySelector("#hospitalDetail").classList.remove("visible", "route-mode");
 }
 
 async function showRoute(hospital) {
@@ -242,8 +243,30 @@ function showRouteGuide(hospital, route) {
   document.querySelector("#routeDestination").textContent = hospital.name;
   document.querySelector("#routeGuide").classList.add("visible");
   document.querySelector("#bottomSheet").classList.remove("expanded");
-  closeHospitalDetail();
+  showRouteHospitalCard(hospital, route, minutes);
   dataState.textContent = `자동차 약 ${minutes}분`;
+}
+
+function showRouteHospitalCard(hospital, route, minutes) {
+  state.selectedHospital = hospital;
+  const availability = hospital.availability;
+  const detail = document.querySelector("#hospitalDetail");
+  detail.innerHTML = `<div class="route-hospital-label"><span>이동 중인 응급실</span><strong>약 ${minutes}분 · ${(route.distance / 1000).toFixed(1)}km</strong></div>
+    <div class="detail-head"><div><h2>${escapeHtml(hospital.name)}</h2></div></div>
+    <p>${escapeHtml(hospital.address)}</p>
+    <div class="bed-grid">${bedItem("응급실", availability?.emergencyRoom)}${bedItem("수술실", availability?.operatingRoom)}${bedItem("중환자실", availability?.intensiveCareUnit)}${bedItem("입원실", availability?.inpatientRoom)}</div>
+    <div class="route-hospital-actions"><a href="tel:${hospital.phoneNumber}">전화하기</a><button class="guardian-action" type="button" data-route-guardian>보호자 문자</button><button class="route-stop" type="button" data-route-stop>길찾기 종료</button></div>`;
+  detail.classList.add("visible", "route-mode");
+  detail.querySelector("[data-route-guardian]").addEventListener("click", () => prepareGuardianMessage(hospital));
+  detail.querySelector("[data-route-stop]").addEventListener("click", stopRouteGuide);
+}
+
+function stopRouteGuide() {
+  clearRoute();
+  document.querySelector("#routeGuide").classList.remove("visible");
+  const detail = document.querySelector("#hospitalDetail");
+  detail.classList.remove("visible", "route-mode");
+  dataState.textContent = "방금 업데이트";
 }
 
 function drawRoute(path) {
@@ -315,9 +338,7 @@ document.querySelector("#radiusSelect").addEventListener("change", event => {
 });
 document.querySelector("#addressSearch").addEventListener("submit", searchAddress);
 document.querySelector("#closeRoute").addEventListener("click", () => {
-  clearRoute();
-  document.querySelector("#routeGuide").classList.remove("visible");
-  dataState.textContent = "방금 업데이트";
+  stopRouteGuide();
 });
 list.addEventListener("click", event => {
   const button = event.target.closest("[data-route-id]");
