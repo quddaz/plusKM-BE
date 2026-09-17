@@ -141,7 +141,8 @@ function selectLocation(coordinate) {
   state.location = coordinateValue(coordinate);
   if (state.mapProvider === "naver") state.userMarker.setPosition(coordinate);
   else state.userMarker.setLatLng(coordinate);
-  clearRoute();
+  if (document.querySelector(".screen").classList.contains("routing")) stopRouteGuide();
+  else clearRoute();
   locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
   updateLocationName();
   loadHospitals();
@@ -243,6 +244,7 @@ function showRouteGuide(hospital, route) {
   document.querySelector("#routeDestination").textContent = hospital.name;
   document.querySelector("#routeGuide").classList.add("visible");
   document.querySelector("#bottomSheet").classList.remove("expanded");
+  document.querySelector(".screen").classList.add("routing");
   showRouteHospitalCard(hospital, route, minutes);
   dataState.textContent = `자동차 약 ${minutes}분`;
 }
@@ -266,6 +268,7 @@ function stopRouteGuide() {
   document.querySelector("#routeGuide").classList.remove("visible");
   const detail = document.querySelector("#hospitalDetail");
   detail.classList.remove("visible", "route-mode");
+  document.querySelector(".screen").classList.remove("routing");
   dataState.textContent = "방금 업데이트";
 }
 
@@ -358,7 +361,9 @@ async function searchAddress(event) {
     if (!response.ok) throw new Error("주소 검색 실패");
     const result = await response.json();
     state.location = { latitude: result.latitude, longitude: result.longitude };
-    clearRoute(); closeHospitalDetail(); updateMapCenter();
+    if (document.querySelector(".screen").classList.contains("routing")) stopRouteGuide();
+    else clearRoute();
+    closeHospitalDetail(); updateMapCenter();
     locationLabel.textContent = `${result.address} · ${state.radiusKilometers}km`;
     loadHospitals();
   } catch (error) {
