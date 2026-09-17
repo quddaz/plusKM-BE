@@ -108,6 +108,7 @@ function initializeNaverMap() {
     icon: { content: '<div class="current-marker"><span></span></div>', anchor: new naver.maps.Point(13, 13) } });
   naver.maps.Event.addListener(state.map, "click", event => selectLocation(event.coord));
   hideMapFallback();
+  fitMapToRadius();
   setTimeout(() => naver.maps.Event.trigger(state.map, "resize"), 100);
 }
 
@@ -124,15 +125,37 @@ function initializeFallbackMap() {
     fillColor: "#1769ff", fillOpacity: 1 }).addTo(state.map).bindTooltip("현재 위치");
   state.map.on("click", event => selectLocation(event.latlng));
   hideMapFallback();
+  fitMapToRadius();
 }
 
 function updateMapCenter() {
   if (state.mapProvider === "naver") {
     const center = new naver.maps.LatLng(state.location.latitude, state.location.longitude);
-    state.map.setCenter(center); state.userMarker.setPosition(center); return;
+    state.map.setCenter(center); state.userMarker.setPosition(center); fitMapToRadius(); return;
   }
   const center = [state.location.latitude, state.location.longitude];
-  state.map.setView(center, 13); state.userMarker.setLatLng(center);
+  state.map.setView(center, 13); state.userMarker.setLatLng(center); fitMapToRadius();
+}
+
+function fitMapToRadius() {
+  if (!state.map || state.route || document.querySelector(".screen").classList.contains("routing")) return;
+  const radius = state.radiusKilometers;
+  if (state.mapProvider === "leaflet") {
+    const bounds = L.latLng(state.location.latitude, state.location.longitude).toBounds(radius * 2000);
+    state.map.fitBounds(bounds, { paddingTopLeft: [24, 145], paddingBottomRight: [24, 145] });
+    return;
+  }
+  const latitudeDelta = radius / 111;
+  const longitudeDelta = radius / (111 * Math.max(Math.cos(state.location.latitude * Math.PI / 180), 0.2));
+  const southWest = new naver.maps.LatLng(
+    state.location.latitude - latitudeDelta,
+    state.location.longitude - longitudeDelta
+  );
+  const northEast = new naver.maps.LatLng(
+    state.location.latitude + latitudeDelta,
+    state.location.longitude + longitudeDelta
+  );
+  state.map.fitBounds(new naver.maps.LatLngBounds(southWest, northEast), { top: 145, right: 24, bottom: 145, left: 24 });
 }
 
 function hideMapFallback() { document.querySelector("#mapFallback").style.display = "none"; }
@@ -143,6 +166,7 @@ function selectLocation(coordinate) {
   else state.userMarker.setLatLng(coordinate);
   if (document.querySelector(".screen").classList.contains("routing")) stopRouteGuide();
   else clearRoute();
+  fitMapToRadius();
   locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
   updateLocationName();
   loadHospitals();
@@ -337,6 +361,7 @@ function resizeMap() {
 document.querySelector("#radiusSelect").addEventListener("change", event => {
   state.radiusKilometers = Number(event.target.value);
   locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
+  fitMapToRadius();
   loadHospitals();
 });
 document.querySelector("#addressSearch").addEventListener("submit", searchAddress);
