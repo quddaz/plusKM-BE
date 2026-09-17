@@ -353,6 +353,11 @@ async function start() {
 function configureGuardianUi() {
   document.querySelector("#loginButton").href = `${API_BASE_URL}/oauth2/authorization/google`;
   document.querySelector("#guardianOpen").addEventListener("click", openGuardianModal);
+  document.querySelector("#hospitalNav").addEventListener("click", () => {
+    closeGuardianModal();
+    document.querySelector("#bottomSheet").classList.add("expanded");
+    setTimeout(resizeMap, 300);
+  });
   document.querySelector("#guardianClose").addEventListener("click", closeGuardianModal);
   document.querySelector("#guardianModal").addEventListener("click", event => {
     if (event.target.id === "guardianModal") closeGuardianModal();

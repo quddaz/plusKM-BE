@@ -26,7 +26,6 @@
             <button type="submit">검색</button>
           </form>
           <a class="emergency-call" href="tel:119">119</a>
-          <button class="guardian-open" id="guardianOpen" type="button">보호자</button>
           <div class="map-controls">
             <button id="myLocationButton" type="button">⌖ 내 위치</button>
             <label>반경
@@ -73,6 +72,14 @@
           <p class="notice">병상 정보는 방문 전 전화로 확인해 주세요.</p>
           <div class="hospital-list" id="hospitalList" aria-live="polite"></div>
         </section>
+        <nav class="bottom-nav" aria-label="주요 메뉴">
+          <button class="active" id="hospitalNav" type="button" aria-current="page">
+            <span aria-hidden="true">＋</span><strong>응급실</strong>
+          </button>
+          <button id="guardianOpen" type="button">
+            <span aria-hidden="true">♡</span><strong>보호자</strong>
+          </button>
+        </nav>
       </div>
     </section>
     <aside class="intro">
