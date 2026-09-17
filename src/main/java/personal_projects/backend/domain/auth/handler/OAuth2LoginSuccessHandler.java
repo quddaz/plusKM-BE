@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 import personal_projects.backend.domain.auth.dto.AuthenticatedUserPrincipal;
 import personal_projects.backend.domain.auth.token.JwtTokenProvider;
 
@@ -17,6 +18,9 @@ import java.io.IOException;
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
+
+    @Value("${app.frontend-url:http://localhost:3000}")
+    private String frontendUrl;
 
     @Override
     public void onAuthenticationSuccess(
@@ -30,6 +34,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         response.addCookie(refreshToken);
         response.setHeader("Authorization", "Bearer " + accessToken);
 
-        response.sendRedirect("http://localhost:3000");
+        // 액세스 토큰은 서버 로그와 Referer에 남지 않도록 URL fragment로 전달한다.
+        response.sendRedirect(frontendUrl + "/#accessToken=" + accessToken);
     }
 }

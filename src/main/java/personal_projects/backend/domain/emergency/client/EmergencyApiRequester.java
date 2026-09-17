@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class EmergencyApiRequester {
 
     private static final String FACILITY_PATH = "/getEgytListInfoInqire";
+    private static final String BED_PATH = "/getEmrrmRltmUsefulSckbdInfoInqire";
     private static final int SUCCESS_STATUS_CODE = 200;
 
     private final EmergencyApiProperties properties;
@@ -31,9 +32,20 @@ public class EmergencyApiRequester {
         return response.body();
     }
 
+    public byte[] requestBeds() {
+        HttpRequest request = createRequest(createUri(BED_PATH));
+        HttpResponse<byte[]> response = send(request);
+        validate(response);
+        return response.body();
+    }
+
     private URI createFacilityUri() {
+        return createUri(FACILITY_PATH);
+    }
+
+    private URI createUri(String path) {
         String query = "?serviceKey=%s&pageNo=1&numOfRows=1000".formatted(encodeServiceKey());
-        return URI.create(properties.baseUrl() + FACILITY_PATH + query);
+        return URI.create(properties.baseUrl() + path + query);
     }
 
     private String encodeServiceKey() {

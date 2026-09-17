@@ -24,6 +24,11 @@ public class EmergencyService {
             new NoSuchElementException("응급 정보를 찾을 수 없습니다."));
     }
 
+    public Emergency findByHpid(String hpid) {
+        return emergencyRepository.findByHpid(hpid).orElseThrow(() ->
+            new NoSuchElementException("응급 정보를 찾을 수 없습니다."));
+    }
+
     public List<NearbyEmergencyResponse> findNearbyEmergencies(NearbyEmergencySearchRequest request) {
         return emergencyRepository.findNearbyEmergencies(
             request.longitude(),

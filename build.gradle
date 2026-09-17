@@ -26,6 +26,8 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	compileOnly 'org.projectlombok:lombok'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -33,6 +35,9 @@ dependencies {
 	implementation group: 'org.hibernate', name: 'hibernate-spatial', version: '6.5.2.Final'
 	// mysql
 	runtimeOnly 'com.mysql:mysql-connector-j'
+	// 데이터베이스 실험 기록 (배포 빌드에는 포함되지 않도록 주석으로 보존)
+	// implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+	// runtimeOnly 'org.postgresql:postgresql'
 	// lombok
 	annotationProcessor 'org.projectlombok:lombok'
 	// junit

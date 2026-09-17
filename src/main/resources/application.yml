@@ -8,6 +8,19 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  # PostgreSQL/JDBC 실험 설정 (실행되지 않으며 실험 기록으로 보존)
+  # datasource:
+  #   url: ${POSTGRES_DATASOURCE_URL}
+  #   username: ${POSTGRES_DATASOURCE_USERNAME}
+  #   password: ${POSTGRES_DATASOURCE_PASSWORD}
+  #   driver-class-name: org.postgresql.Driver
+
+  # MongoDB 실험 설정 (실행되지 않음, MongoDB는 JDBC가 아닌 Spring Data 사용)
+  # data:
+  #   mongodb:
+  #     uri: ${SPRING_DATA_MONGODB_URI}
+  #     auto-index-creation: true
+
   jpa:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
@@ -44,12 +57,25 @@ jwt:
 cors:
   allowed:
     origins: ${CORS_ALLOWED_ORIGINS}
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
 emergency:
   api:
     service-key: ${EMERGENCY_API_SERVICE_KEY:}
     base-url: ${EMERGENCY_API_BASE_URL:https://apis.data.go.kr/B552657/ErmctInfoInqireService}
     timeout: ${EMERGENCY_API_TIMEOUT:10s}
   sync-delay: ${EMERGENCY_SYNC_DELAY:24h}
+  bed-sync-delay: ${EMERGENCY_BED_SYNC_DELAY:5m}
+  bed-sync-initial-delay: ${EMERGENCY_BED_SYNC_INITIAL_DELAY:0s}
+guardian:
+  encryption-key: ${GUARDIAN_PHONE_ENCRYPTION_KEY:}
+  sms:
+    enabled: ${NAVER_SENS_ENABLED:false}
+    endpoint: ${NAVER_SENS_ENDPOINT:https://sens.apigw.ntruss.com}
+    service-id: ${NAVER_SENS_SERVICE_ID:}
+    access-key: ${NAVER_CLOUD_ACCESS_KEY:}
+    secret-key: ${NAVER_CLOUD_SECRET_KEY:}
+    from: ${NAVER_SENS_FROM:}
 logging:
   file:
     path: /logs/logging

@@ -26,6 +26,7 @@
             <button type="submit">검색</button>
           </form>
           <a class="emergency-call" href="tel:119">119</a>
+          <button class="guardian-open" id="guardianOpen" type="button">보호자</button>
           <div class="map-controls">
             <button id="myLocationButton" type="button">⌖ 내 위치</button>
             <label>반경
@@ -44,6 +45,24 @@
             <b id="routeDistance"></b>
           </section>
           <section class="hospital-detail" id="hospitalDetail" aria-live="polite"></section>
+          <div class="modal-backdrop" id="guardianModal" aria-hidden="true">
+            <section class="guardian-panel" role="dialog" aria-modal="true" aria-labelledby="guardianTitle">
+              <header><div><small>긴급 연락 설정</small><h2 id="guardianTitle">내 보호자</h2></div><button id="guardianClose" type="button" aria-label="닫기">×</button></header>
+              <p class="guardian-help">연락처는 서버에서 암호화해 보관하며, 문자는 휴대폰 문자 앱에서 직접 확인 후 전송합니다.</p>
+              <div class="guardian-auth" id="guardianAuth">
+                <p>보호자 연락처를 이용하려면 로그인이 필요해요.</p>
+                <a id="loginButton" href="#">Google로 로그인</a>
+              </div>
+              <form class="guardian-form" id="guardianForm" hidden>
+                <div><label for="guardianName">이름</label><input id="guardianName" maxlength="40" placeholder="예: 김보호" required /></div>
+                <div><label for="guardianRelationship">관계</label><input id="guardianRelationship" maxlength="20" placeholder="예: 부모" required /></div>
+                <div class="phone-field"><label for="guardianPhone">휴대전화</label><input id="guardianPhone" inputmode="tel" placeholder="010-1234-5678" required /></div>
+                <button type="submit">보호자 등록</button>
+              </form>
+              <div class="guardian-list" id="guardianList"></div>
+            </section>
+          </div>
+          <p class="toast" id="toast" role="status"></p>
         </section>
         <section class="bottom-sheet" id="bottomSheet">
           <button class="sheet-handle" id="sheetHandle" type="button" aria-label="병원 목록 펼치기"><span></span></button>
@@ -63,6 +82,7 @@
         <li>지도를 눌러 출발 위치 선택</li>
         <li>최대 30km 주변 응급실 탐색</li>
         <li>전화 연결과 자동차 경로 확인</li>
+        <li>보호자에게 현재 위치 문자 작성</li>
       </ul>
     </aside>
   </main>

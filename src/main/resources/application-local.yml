@@ -8,6 +8,19 @@ spring:
     password: local_password
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  # PostgreSQL/JDBC 로컬 실험 설정 (실행되지 않음)
+  # datasource:
+  #   url: jdbc:postgresql://localhost:5432/myapp_local
+  #   username: local_user
+  #   password: local_password
+  #   driver-class-name: org.postgresql.Driver
+
+  # MongoDB 로컬 실험 설정 (실행되지 않음, MongoDB는 JDBC가 아닌 Spring Data 사용)
+  # data:
+  #   mongodb:
+  #     uri: mongodb://localhost:27017/myapp_local
+  #     auto-index-creation: true
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -44,11 +57,25 @@ jwt:
 cors:
   allowed:
     origins: http://localhost:3000
+app:
+  frontend-url: http://localhost:3000
 
 emergency:
   api:
     service-key: ${EMERGENCY_API_SERVICE_KEY:}
   sync-delay: 24h
+  bed-sync-delay: 5m
+  bed-sync-initial-delay: 0s
+
+guardian:
+  encryption-key: ${GUARDIAN_PHONE_ENCRYPTION_KEY:}
+  sms:
+    enabled: ${NAVER_SENS_ENABLED:false}
+    endpoint: ${NAVER_SENS_ENDPOINT:https://sens.apigw.ntruss.com}
+    service-id: ${NAVER_SENS_SERVICE_ID:}
+    access-key: ${NAVER_CLOUD_ACCESS_KEY:}
+    secret-key: ${NAVER_CLOUD_SECRET_KEY:}
+    from: ${NAVER_SENS_FROM:}
 
 logging:
   file:

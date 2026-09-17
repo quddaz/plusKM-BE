@@ -7,6 +7,17 @@ const locationLabel = document.querySelector("#locationLabel");
 const resultCount = document.querySelector("#resultCount");
 const NAVER_MAP_CLIENT_ID = "cjtt3s316g";
 const MAP_LOAD_DELAYS = [0, 1500, 4000];
+const API_BASE_URL = (window.PLUSKM_API_BASE_URL || localStorage.getItem("pluskmApiBaseUrl") || "").replace(/\/$/, "");
+let accessToken = localStorage.getItem("pluskmAccessToken") || "";
+let guardians = [];
+
+function acceptLoginToken() {
+  const token = new URLSearchParams(location.hash.slice(1)).get("accessToken");
+  if (!token) return;
+  accessToken = token;
+  localStorage.setItem("pluskmAccessToken", token);
+  history.replaceState(null, "", `${location.pathname}${location.search}`);
+}
 
 async function loadNaverMap() {
   for (let attempt = 0; attempt < MAP_LOAD_DELAYS.length; attempt++) {
@@ -187,10 +198,11 @@ function selectHospital(hospital) {
     <p>${escapeHtml(hospital.address)}</p>
     <div class="bed-grid">${bedItem("응급실", availability?.emergencyRoom)}${bedItem("수술실", availability?.operatingRoom)}${bedItem("중환자실", availability?.intensiveCareUnit)}${bedItem("입원실", availability?.inpatientRoom)}</div>
     <small class="bed-updated">${availability ? `${formatUpdatedAt(availability.updatedAt)} 기준` : "실시간 병상 정보 확인 필요"}</small>
-    <div class="detail-actions"><a href="tel:${hospital.phoneNumber}">전화하기</a><button type="button" data-detail-route>자동차 길찾기</button></div>`;
+    <div class="detail-actions with-guardian"><a href="tel:${hospital.phoneNumber}">전화하기</a><button type="button" data-detail-route>길찾기</button><button class="guardian-action" type="button" data-guardian-message>보호자 문자</button></div>`;
   detail.classList.add("visible");
   detail.querySelector(".detail-close").addEventListener("click", closeHospitalDetail);
   detail.querySelector("[data-detail-route]").addEventListener("click", () => showRoute(hospital));
+  detail.querySelector("[data-guardian-message]").addEventListener("click", () => prepareGuardianMessage(hospital));
 }
 
 function bedItem(label, count) {
@@ -333,8 +345,122 @@ async function searchAddress(event) {
   }
 }
 async function start() {
+  acceptLoginToken();
+  configureGuardianUi();
   locate();
 }
 
+function configureGuardianUi() {
+  document.querySelector("#loginButton").href = `${API_BASE_URL}/oauth2/authorization/google`;
+  document.querySelector("#guardianOpen").addEventListener("click", openGuardianModal);
+  document.querySelector("#guardianClose").addEventListener("click", closeGuardianModal);
+  document.querySelector("#guardianModal").addEventListener("click", event => {
+    if (event.target.id === "guardianModal") closeGuardianModal();
+  });
+  document.querySelector("#guardianForm").addEventListener("submit", createGuardian);
+  document.querySelector("#guardianList").addEventListener("click", deleteGuardian);
+}
+
+async function openGuardianModal() {
+  document.querySelector("#guardianModal").classList.add("visible");
+  document.querySelector("#guardianModal").setAttribute("aria-hidden", "false");
+  document.querySelector("#guardianAuth").hidden = Boolean(accessToken);
+  document.querySelector("#guardianForm").hidden = !accessToken;
+  if (accessToken) await loadGuardians();
+}
+
+function closeGuardianModal() {
+  document.querySelector("#guardianModal").classList.remove("visible");
+  document.querySelector("#guardianModal").setAttribute("aria-hidden", "true");
+}
+
+async function guardianRequest(path, options = {}) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, ...(options.headers || {}) }
+  });
+  if (response.status === 401 || response.status === 403) {
+    accessToken = "";
+    localStorage.removeItem("pluskmAccessToken");
+    throw new Error("로그인이 만료됐어요. 다시 로그인해 주세요.");
+  }
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.message || "요청을 처리하지 못했어요.");
+  }
+  return response.status === 204 ? null : response.json();
+}
+
+async function loadGuardians() {
+  try {
+    guardians = await guardianRequest("/guardians");
+    renderGuardians();
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+function renderGuardians() {
+  const container = document.querySelector("#guardianList");
+  container.innerHTML = guardians.length ? guardians.map(guardian => `<article class="guardian-item">
+    <div><strong>${escapeHtml(guardian.name)} · ${escapeHtml(guardian.relationship)}</strong><span>${escapeHtml(guardian.maskedPhoneNumber)}</span></div>
+    <button type="button" data-delete-guardian="${guardian.id}">삭제</button>
+  </article>`).join("") : '<p class="empty">등록된 보호자가 없습니다.</p>';
+}
+
+async function createGuardian(event) {
+  event.preventDefault();
+  const phoneNumber = document.querySelector("#guardianPhone").value.trim();
+  if (!/^01[016789]-?\d{3,4}-?\d{4}$/.test(phoneNumber)) return showToast("휴대전화 번호를 확인해 주세요.");
+  try {
+    await guardianRequest("/guardians", { method: "POST", body: JSON.stringify({
+      name: document.querySelector("#guardianName").value.trim(),
+      relationship: document.querySelector("#guardianRelationship").value.trim(), phoneNumber
+    }) });
+    event.target.reset();
+    showToast("보호자를 등록했어요.");
+    await loadGuardians();
+  } catch (error) { showToast(error.message); }
+}
+
+async function deleteGuardian(event) {
+  const button = event.target.closest("[data-delete-guardian]");
+  if (!button) return;
+  try {
+    await guardianRequest(`/guardians/${button.dataset.deleteGuardian}`, { method: "DELETE" });
+    showToast("보호자를 삭제했어요.");
+    await loadGuardians();
+  } catch (error) { showToast(error.message); }
+}
+
+async function prepareGuardianMessage(hospital) {
+  if (!accessToken) {
+    await openGuardianModal();
+    return showToast("먼저 로그인하고 보호자를 등록해 주세요.");
+  }
+  if (!guardians.length) await loadGuardians();
+  const guardian = guardians.find(item => item.active);
+  if (!guardian) {
+    await openGuardianModal();
+    return showToast("활성 보호자를 먼저 등록해 주세요.");
+  }
+  try {
+    const result = await guardianRequest(`/guardians/${guardian.id}/emergency-message`, {
+      method: "POST", body: JSON.stringify({ emergencyHpid: String(hospital.id),
+        longitude: state.location.longitude, latitude: state.location.latitude })
+    });
+    location.href = result.smsUri;
+  } catch (error) { showToast(error.message); }
+}
+
+let toastTimer;
+function showToast(message) {
+  const toast = document.querySelector("#toast");
+  toast.textContent = message;
+  toast.classList.add("visible");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("visible"), 2800);
+}
+
 start();
-setInterval(loadHospitals, 5000);
+setInterval(loadHospitals, 60000);

@@ -4,6 +4,7 @@ import lombok.Builder;
 @Builder
 public record NearbyEmergencyResponse(
     Long id,
+    String hpid,
     String name,
     String address,
     String phoneNumber,
