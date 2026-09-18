@@ -125,7 +125,8 @@ async function refreshBeds() {
 function render() {
   const hospitals = state.hospitals.map(hospital => ({
     ...hospital, distance: distanceInKilometers(state.location, hospital)
-  })).sort((first, second) => first.distance - second.distance);
+  })).filter(hospital => hospital.distance <= state.radiusKilometers)
+    .sort((first, second) => first.distance - second.distance);
   resultCount.textContent = hospitals.length;
   list.innerHTML = hospitals.length ? hospitals.map(card).join("") : '<p class="empty">반경 안의 응급실 정보를 확인할 수 없습니다.</p>';
   renderMarkers(hospitals);
