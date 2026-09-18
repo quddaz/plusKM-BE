@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,6 +21,7 @@ public class NaverSensSmsSender implements EmergencySmsSender {
     private final HttpClient httpClient;
     private final Clock clock;
 
+    @Autowired
     public NaverSensSmsSender(
         NaverSensProperties properties,
         NaverApiSigner signer,

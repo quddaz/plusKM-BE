@@ -8,6 +8,7 @@ import java.util.Base64;
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import personal_projects.backend.domain.guardian.config.GuardianSecurityProperties;
 
@@ -21,6 +22,7 @@ public class GuardianPhoneCipher {
     private final String encodedKey;
     private final SecureRandom secureRandom;
 
+    @Autowired
     public GuardianPhoneCipher(GuardianSecurityProperties properties) {
         this(properties.encryptionKey(), new SecureRandom());
     }

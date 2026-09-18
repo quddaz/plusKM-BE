@@ -63,9 +63,9 @@ app:
 emergency:
   api:
     service-key: ${EMERGENCY_API_SERVICE_KEY:}
-  sync-delay: 24h
-  bed-sync-delay: 5m
-  bed-sync-initial-delay: 0s
+  sync-delay: PT24H
+  bed-sync-delay: PT5M
+  bed-sync-initial-delay: PT0S
 
 guardian:
   encryption-key: ${GUARDIAN_PHONE_ENCRYPTION_KEY:}

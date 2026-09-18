@@ -67,9 +67,9 @@ emergency:
     service-key: ${EMERGENCY_API_SERVICE_KEY:}
     base-url: ${EMERGENCY_API_BASE_URL:https://apis.data.go.kr/B552657/ErmctInfoInqireService}
     timeout: ${EMERGENCY_API_TIMEOUT:10s}
-  sync-delay: ${EMERGENCY_SYNC_DELAY:24h}
-  bed-sync-delay: ${EMERGENCY_BED_SYNC_DELAY:5m}
-  bed-sync-initial-delay: ${EMERGENCY_BED_SYNC_INITIAL_DELAY:0s}
+  sync-delay: ${EMERGENCY_SYNC_DELAY:PT24H}
+  bed-sync-delay: ${EMERGENCY_BED_SYNC_DELAY:PT5M}
+  bed-sync-initial-delay: ${EMERGENCY_BED_SYNC_INITIAL_DELAY:PT0S}
 guardian:
   encryption-key: ${GUARDIAN_PHONE_ENCRYPTION_KEY:}
   sms:

@@ -7,7 +7,11 @@ const locationLabel = document.querySelector("#locationLabel");
 const resultCount = document.querySelector("#resultCount");
 const NAVER_MAP_CLIENT_ID = "cjtt3s316g";
 const MAP_LOAD_DELAYS = [0, 1500, 4000];
-const API_BASE_URL = (window.PLUSKM_API_BASE_URL || localStorage.getItem("pluskmApiBaseUrl") || "").replace(/\/$/, "");
+const API_BASE_URL = (
+  window.PLUSKM_API_BASE_URL
+  || localStorage.getItem("pluskmApiBaseUrl")
+  || "https://api.pluskm.live"
+).replace(/\/$/, "");
 let accessToken = localStorage.getItem("pluskmAccessToken") || "";
 let guardians = [];
 
