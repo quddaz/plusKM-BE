@@ -14,6 +14,7 @@ const API_BASE_URL = (
 ).replace(/\/$/, "");
 let accessToken = localStorage.getItem("pluskmAccessToken") || "";
 let guardians = [];
+let bedRefreshInFlight = false;
 
 function acceptLoginToken() {
   const token = new URLSearchParams(location.hash.slice(1)).get("accessToken");
@@ -66,18 +67,46 @@ function distanceInKilometers(origin, destination) {
 async function loadHospitals() {
   dataState.textContent = "응급실 확인 중";
   try {
-    const response = await fetch("/api/emergencies/search", {
+    const response = await fetch(`${API_BASE_URL}/emergencies/search`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...state.location, radiusKilometers: state.radiusKilometers })
     });
     if (!response.ok) throw new Error("API 연결 실패");
-    state.hospitals = (await response.json()).emergencies;
-    dataState.textContent = "방금 업데이트";
+    state.hospitals = (await response.json()).emergencies.map(hospital => ({ ...hospital, availability: null }));
+    dataState.textContent = "병상 정보 갱신 중";
+    render();
+    void refreshBeds();
   } catch (error) {
     state.hospitals = [];
     dataState.textContent = "응급실 정보를 불러오지 못했어요";
+    render();
   }
-  render();
+}
+
+async function refreshBeds() {
+  if (bedRefreshInFlight || !state.hospitals.length) return;
+  bedRefreshInFlight = true;
+  try {
+    const response = await fetch(`${API_BASE_URL}/emergencies/beds`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hpids: state.hospitals.map(hospital => hospital.hpid) })
+    });
+    if (!response.ok) throw new Error("병상 API 연결 실패");
+    const availabilityByHpid = new Map(
+      (await response.json()).availabilities.map(availability => [availability.hpid, availability])
+    );
+    state.hospitals = state.hospitals.map(hospital => ({
+      ...hospital,
+      availability: availabilityByHpid.get(hospital.hpid) ?? hospital.availability
+    }));
+    dataState.textContent = "방금 업데이트";
+    render();
+  } catch (error) {
+    dataState.textContent = "병상 정보 갱신 대기 중";
+  } finally {
+    bedRefreshInFlight = false;
+  }
 }
 
 function render() {
@@ -523,4 +552,4 @@ function showToast(message) {
 }
 
 start();
-setInterval(loadHospitals, 60000);
+setInterval(refreshBeds, 60000);

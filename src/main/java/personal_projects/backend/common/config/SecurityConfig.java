@@ -37,7 +37,8 @@ public class SecurityConfig {
         "/webjars/**",
         "/global/**",
         "/actuator/**",
-        "/auth/**"
+        "/auth/**",
+        "/emergencies/**"
     };
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
