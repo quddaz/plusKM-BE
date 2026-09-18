@@ -6,6 +6,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import personal_projects.backend.domain.auth.dto.AuthenticatedUserPrincipal;
 import personal_projects.backend.domain.auth.dto.social.GoogleOAuth2UserInfo;
 import personal_projects.backend.domain.auth.dto.social.OAuth2UserInfo;
@@ -40,5 +41,10 @@ public class OAuth2LoginUserService extends DefaultOAuth2UserService {
     private User findOrCreateUser(OAuth2UserInfo userInfo) {
         return userRepository.findBySocialId(userInfo.providerId())
             .orElseGet(() -> userRepository.save(User.fromOAuth2UserInfo(userInfo)));
+    }
+
+    @Transactional
+    public User findOrCreateGoogleUser(Map<String, Object> attributes) {
+        return findOrCreateUser(new GoogleOAuth2UserInfo(attributes));
     }
 }
