@@ -18,6 +18,7 @@ import personal_projects.backend.domain.auth.filter.JwtAuthenticationEntryPoint;
 import personal_projects.backend.domain.auth.filter.JwtAuthenticationFilter;
 import personal_projects.backend.domain.auth.handler.OAuth2LoginSuccessHandler;
 import personal_projects.backend.domain.auth.handler.OAuth2LoginFailureHandler;
+import personal_projects.backend.domain.auth.repository.CookieOAuth2AuthorizationRequestRepository;
 import personal_projects.backend.domain.auth.service.OAuth2LoginUserService;
 
 @Configuration
@@ -26,6 +27,7 @@ import personal_projects.backend.domain.auth.service.OAuth2LoginUserService;
 public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oauth2LoginFailureHandler;
+    private final CookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
     private final OAuth2LoginUserService oauth2LoginUserService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
@@ -52,14 +54,14 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults()) // CORS 설정 -> 기본 corsConfigurationSource 빈 사용
             .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 기능 비활성화
             .sessionManagement(sessionManagement -> sessionManagement
-                // Google OAuth 인가 요청과 콜백 사이의 state를 보관할 때만 세션을 생성한다.
-                // 로그인 완료 후 API 인증은 기존과 동일하게 JWT를 사용한다.
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터를 UsernamePasswordAuthenticationFilter 전에 추가
             .exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증되지 않은 사용자가 보호된 리소스에 액세스 할 때 호출
                 .accessDeniedHandler(jwtAccessDeniedHandler)) // 권한이 없는 사용자가 보호된 리소스에 액세스 할 때 호출
             .oauth2Login(oauth2 -> oauth2
+                .authorizationEndpoint(endpoint -> endpoint
+                    .authorizationRequestRepository(authorizationRequestRepository))
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
                     .userService(oauth2LoginUserService))
                 .successHandler(oauth2LoginSuccessHandler)
