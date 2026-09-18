@@ -64,6 +64,17 @@ function distanceInKilometers(origin, destination) {
   return 6371 * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
 }
 
+function normalizeHospitalCoordinate(hospital) {
+  const longitude = Number(hospital.longitude);
+  const latitude = Number(hospital.latitude);
+  // MySQL SRID 4326은 환경에 따라 X/Y를 위도/경도 축 순서로 반환할 수 있다.
+  // 위도로 올 수 없는 값이 들어오면 사용자에게 전달하기 전에 정상 순서로 복구한다.
+  if (Math.abs(latitude) > 90 && Math.abs(longitude) <= 90) {
+    return { ...hospital, longitude: latitude, latitude: longitude };
+  }
+  return { ...hospital, longitude, latitude };
+}
+
 async function loadHospitals() {
   dataState.textContent = "응급실 확인 중";
   try {
@@ -72,7 +83,9 @@ async function loadHospitals() {
       body: JSON.stringify({ ...state.location, radiusKilometers: state.radiusKilometers })
     });
     if (!response.ok) throw new Error("API 연결 실패");
-    state.hospitals = (await response.json()).emergencies.map(hospital => ({ ...hospital, availability: null }));
+    state.hospitals = (await response.json()).emergencies.map(hospital => ({
+      ...normalizeHospitalCoordinate(hospital), availability: null
+    }));
     dataState.textContent = "병상 정보 갱신 중";
     render();
     void refreshBeds();
