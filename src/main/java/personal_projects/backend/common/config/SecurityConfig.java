@@ -17,6 +17,7 @@ import personal_projects.backend.domain.auth.filter.JwtAccessDeniedHandler;
 import personal_projects.backend.domain.auth.filter.JwtAuthenticationEntryPoint;
 import personal_projects.backend.domain.auth.filter.JwtAuthenticationFilter;
 import personal_projects.backend.domain.auth.handler.OAuth2LoginSuccessHandler;
+import personal_projects.backend.domain.auth.handler.OAuth2LoginFailureHandler;
 import personal_projects.backend.domain.auth.service.OAuth2LoginUserService;
 
 @Configuration
@@ -24,6 +25,7 @@ import personal_projects.backend.domain.auth.service.OAuth2LoginUserService;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
+    private final OAuth2LoginFailureHandler oauth2LoginFailureHandler;
     private final OAuth2LoginUserService oauth2LoginUserService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
@@ -38,6 +40,8 @@ public class SecurityConfig {
         "/global/**",
         "/actuator/**",
         "/auth/**",
+        "/oauth2/**",
+        "/login/**",
         "/emergencies/**"
     };
     @Bean
@@ -56,7 +60,8 @@ public class SecurityConfig {
             .oauth2Login(oauth2 -> oauth2
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
                     .userService(oauth2LoginUserService))
-                .successHandler(oauth2LoginSuccessHandler))
+                .successHandler(oauth2LoginSuccessHandler)
+                .failureHandler(oauth2LoginFailureHandler))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(PUBLIC_ENDPOINTS).permitAll() // 화이트 리스트를 제외하고 모두 인증
                 .anyRequest().authenticated());

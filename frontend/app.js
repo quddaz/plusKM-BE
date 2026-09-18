@@ -17,6 +17,11 @@ let guardians = [];
 let bedRefreshInFlight = false;
 
 function acceptLoginToken() {
+  const loginError = new URLSearchParams(location.search).get("loginError");
+  if (loginError) {
+    history.replaceState(null, "", location.pathname);
+    setTimeout(() => showToast("Google 로그인에 실패했어요. 잠시 후 다시 시도해 주세요."), 0);
+  }
   const token = new URLSearchParams(location.hash.slice(1)).get("accessToken");
   if (!token) return;
   accessToken = token;
