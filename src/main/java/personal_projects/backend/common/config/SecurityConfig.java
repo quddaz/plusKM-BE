@@ -52,7 +52,9 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults()) // CORS 설정 -> 기본 corsConfigurationSource 빈 사용
             .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 기능 비활성화
             .sessionManagement(sessionManagement -> sessionManagement
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Google OAuth 인가 요청과 콜백 사이의 state를 보관할 때만 세션을 생성한다.
+                // 로그인 완료 후 API 인증은 기존과 동일하게 JWT를 사용한다.
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터를 UsernamePasswordAuthenticationFilter 전에 추가
             .exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증되지 않은 사용자가 보호된 리소스에 액세스 할 때 호출
