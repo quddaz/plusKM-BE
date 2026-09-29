@@ -1,10 +1,13 @@
 const DEFAULT_LOCATION = { latitude: 37.5665, longitude: 126.9780 };
-const state = { location: DEFAULT_LOCATION, radiusKilometers: 10, hospitals: [], map: null,
+const state = { location: DEFAULT_LOCATION, radiusKilometers: 10, searchMode: "EMERGENCY", hospitals: [], map: null,
   mapProvider: null, markers: [], userMarker: null, route: null, selectedHospital: null };
 const list = document.querySelector("#hospitalList");
 const dataState = document.querySelector("#dataState");
 const locationLabel = document.querySelector("#locationLabel");
 const resultCount = document.querySelector("#resultCount");
+const resultType = document.querySelector("#resultType");
+const resultNotice = document.querySelector("#resultNotice");
+const mapLegend = document.querySelector(".map-legend");
 const NAVER_MAP_CLIENT_ID = "cjtt3s316g";
 const MAP_LOAD_DELAYS = [0, 1500, 4000];
 const API_BASE_URL = (
@@ -101,8 +104,44 @@ async function loadHospitals() {
   }
 }
 
+async function loadPlaces() {
+  const label = modeLabel();
+  dataState.textContent = `${label} 확인 중`;
+  try {
+    const response = await fetch(`${API_BASE_URL}/places/search`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...state.location,
+        radiusKilometers: state.radiusKilometers,
+        category: state.searchMode
+      })
+    });
+    if (!response.ok) throw new Error("API 연결 실패");
+    state.hospitals = (await response.json()).places.map(place => ({
+      ...normalizeHospitalCoordinate(place),
+      distance: Number(place.distanceMeters) / 1000,
+      availability: null
+    }));
+    dataState.textContent = "방금 업데이트";
+    render();
+  } catch (error) {
+    state.hospitals = [];
+    dataState.textContent = `${label} 정보를 불러오지 못했어요`;
+    render();
+  }
+}
+
+function loadNearby() {
+  closeHospitalDetail();
+  return state.searchMode === "EMERGENCY" ? loadHospitals() : loadPlaces();
+}
+
+function modeLabel() {
+  return { EMERGENCY: "응급실", HOSPITAL: "병원", PHARMACY: "약국" }[state.searchMode];
+}
+
 async function refreshBeds() {
-  if (bedRefreshInFlight || !state.hospitals.length) return;
+  if (state.searchMode !== "EMERGENCY" || bedRefreshInFlight || !state.hospitals.length) return;
   bedRefreshInFlight = true;
   try {
     const response = await fetch(`${API_BASE_URL}/emergencies/beds`, {
@@ -133,7 +172,13 @@ function render() {
   })).filter(hospital => hospital.distance <= state.radiusKilometers)
     .sort((first, second) => first.distance - second.distance);
   resultCount.textContent = hospitals.length;
-  list.innerHTML = hospitals.length ? hospitals.map(card).join("") : '<p class="empty">반경 안의 응급실 정보를 확인할 수 없습니다.</p>';
+  resultType.textContent = modeLabel();
+  resultNotice.textContent = state.searchMode === "EMERGENCY"
+    ? "병상 정보는 방문 전 전화로 확인해 주세요."
+    : "운영 여부와 진료·조제 시간은 방문 전 전화로 확인해 주세요.";
+  mapLegend.hidden = state.searchMode !== "EMERGENCY";
+  list.innerHTML = hospitals.length ? hospitals.map(card).join("")
+    : `<p class="empty">반경 안의 ${modeLabel()} 정보를 확인할 수 없습니다.</p>`;
   renderMarkers(hospitals);
 }
 
@@ -221,7 +266,7 @@ function selectLocation(coordinate) {
   fitMapToRadius();
   locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
   updateLocationName();
-  loadHospitals();
+  loadNearby();
 }
 function coordinateValue(coordinate) {
   const latitude = typeof coordinate.lat === "function" ? coordinate.lat() : coordinate.lat;
@@ -263,11 +308,13 @@ function renderMarkers(hospitals) {
 }
 
 function needsVerification(hospital) {
-  return !hospital.availability || hospital.availability.emergencyRoom === null;
+  return state.searchMode === "EMERGENCY"
+    && (!hospital.availability || hospital.availability.emergencyRoom === null);
 }
 
 function selectHospital(hospital) {
   state.selectedHospital = hospital;
+  if (state.searchMode !== "EMERGENCY") return selectPlace(hospital);
   const availability = hospital.availability;
   const detail = document.querySelector("#hospitalDetail");
   detail.classList.remove("route-mode");
@@ -281,6 +328,19 @@ function selectHospital(hospital) {
   detail.querySelector(".detail-close").addEventListener("click", closeHospitalDetail);
   detail.querySelector("[data-detail-route]").addEventListener("click", () => showRoute(hospital));
   detail.querySelector("[data-guardian-message]").addEventListener("click", () => prepareGuardianMessage(hospital));
+}
+
+function selectPlace(place) {
+  const detail = document.querySelector("#hospitalDetail");
+  detail.classList.remove("route-mode");
+  detail.innerHTML = `<button class="detail-close" type="button" aria-label="닫기">×</button>
+    <div class="detail-head"><div><small>선택한 ${modeLabel()}</small><h2>${escapeHtml(place.name)}</h2></div><span>${distanceInKilometers(state.location, place).toFixed(1)}km</span></div>
+    <p>${escapeHtml(place.address)}</p>
+    <div class="place-information"><span>시설 구분</span><strong>${escapeHtml(place.facilityType || modeLabel())}</strong></div>
+    <div class="detail-actions"><a href="tel:${place.phoneNumber}">전화하기</a><button type="button" data-detail-route>길찾기</button></div>`;
+  detail.classList.add("visible");
+  detail.querySelector(".detail-close").addEventListener("click", closeHospitalDetail);
+  detail.querySelector("[data-detail-route]").addEventListener("click", () => showRoute(place));
 }
 
 function bedItem(label, count) {
@@ -327,6 +387,7 @@ function showRouteGuide(hospital, route) {
 
 function showRouteHospitalCard(hospital, route, minutes) {
   state.selectedHospital = hospital;
+  if (state.searchMode !== "EMERGENCY") return showRoutePlaceCard(hospital, route, minutes);
   const availability = hospital.availability;
   const detail = document.querySelector("#hospitalDetail");
   detail.innerHTML = `<div class="route-hospital-label"><span>이동 중인 응급실</span><strong>약 ${minutes}분 · ${(route.distance / 1000).toFixed(1)}km</strong></div>
@@ -336,6 +397,17 @@ function showRouteHospitalCard(hospital, route, minutes) {
     <div class="route-hospital-actions"><a href="tel:${hospital.phoneNumber}">전화하기</a><button class="guardian-action" type="button" data-route-guardian>보호자 문자</button><button class="route-stop" type="button" data-route-stop>길찾기 종료</button></div>`;
   detail.classList.add("visible", "route-mode");
   detail.querySelector("[data-route-guardian]").addEventListener("click", () => prepareGuardianMessage(hospital));
+  detail.querySelector("[data-route-stop]").addEventListener("click", stopRouteGuide);
+}
+
+function showRoutePlaceCard(place, route, minutes) {
+  const detail = document.querySelector("#hospitalDetail");
+  detail.innerHTML = `<div class="route-hospital-label"><span>이동 중인 ${modeLabel()}</span><strong>약 ${minutes}분 · ${(route.distance / 1000).toFixed(1)}km</strong></div>
+    <div class="detail-head"><div><h2>${escapeHtml(place.name)}</h2></div></div>
+    <p>${escapeHtml(place.address)}</p>
+    <div class="place-information"><span>시설 구분</span><strong>${escapeHtml(place.facilityType || modeLabel())}</strong></div>
+    <div class="route-hospital-actions place-route-actions"><a href="tel:${place.phoneNumber}">전화하기</a><button class="route-stop" type="button" data-route-stop>길찾기 종료</button></div>`;
+  detail.classList.add("visible", "route-mode");
   detail.querySelector("[data-route-stop]").addEventListener("click", stopRouteGuide);
 }
 
@@ -384,7 +456,7 @@ function locate() {
     completed = true;
     clearTimeout(timeout);
     state.location = { latitude: position.coords.latitude, longitude: position.coords.longitude };
-    initializeMap(); updateLocationName(); loadHospitals();
+    initializeMap(); updateLocationName(); loadNearby();
   }, () => {
     if (completed) return;
     completed = true;
@@ -396,7 +468,7 @@ function locate() {
 function useDefaultLocation(message) {
   state.location = DEFAULT_LOCATION;
   locationLabel.textContent = message;
-  initializeMap(); loadHospitals();
+  initializeMap(); loadNearby();
 }
 
 document.querySelector("#myLocationButton").addEventListener("click", locate);
@@ -414,7 +486,15 @@ document.querySelector("#radiusSelect").addEventListener("change", event => {
   state.radiusKilometers = Number(event.target.value);
   locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
   fitMapToRadius();
-  loadHospitals();
+  loadNearby();
+});
+document.querySelector("#placeTypeSelect").addEventListener("change", event => {
+  state.searchMode = event.target.value;
+  state.hospitals = [];
+  clearRoute();
+  stopRouteGuide();
+  render();
+  loadNearby();
 });
 document.querySelector("#addressSearch").addEventListener("submit", searchAddress);
 document.querySelector("#closeRoute").addEventListener("click", () => {
@@ -442,7 +522,7 @@ async function searchAddress(event) {
     else clearRoute();
     closeHospitalDetail(); updateMapCenter();
     locationLabel.textContent = `${result.address} · ${state.radiusKilometers}km`;
-    loadHospitals();
+    loadNearby();
   } catch (error) {
     dataState.textContent = "주소를 찾지 못했어요";
   }

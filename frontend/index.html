@@ -28,6 +28,13 @@
           <a class="emergency-call" href="tel:119">119</a>
           <div class="map-controls">
             <button id="myLocationButton" type="button">⌖ 내 위치</button>
+            <label>종류
+              <select id="placeTypeSelect" aria-label="시설 종류">
+                <option value="EMERGENCY">응급실</option>
+                <option value="HOSPITAL">병원</option>
+                <option value="PHARMACY">약국</option>
+              </select>
+            </label>
             <label>반경
               <select id="radiusSelect" aria-label="검색 반경">
                 <option value="1">1km</option><option value="3">3km</option>
@@ -66,10 +73,10 @@
         <section class="bottom-sheet" id="bottomSheet">
           <button class="sheet-handle" id="sheetHandle" type="button" aria-label="병원 목록 펼치기"><span></span></button>
           <div class="sheet-summary">
-            <div><p id="locationLabel">현재 위치를 확인하고 있어요</p><h1>주변 응급실 <strong id="resultCount">0</strong>곳</h1></div>
+            <div><p id="locationLabel">현재 위치를 확인하고 있어요</p><h1>주변 <span id="resultType">응급실</span> <strong id="resultCount">0</strong>곳</h1></div>
             <span id="dataState">연결 확인 중</span>
           </div>
-          <p class="notice">병상 정보는 방문 전 전화로 확인해 주세요.</p>
+          <p class="notice" id="resultNotice">병상 정보는 방문 전 전화로 확인해 주세요.</p>
           <div class="hospital-list" id="hospitalList" aria-live="polite"></div>
         </section>
         <nav class="bottom-nav" aria-label="주요 메뉴">

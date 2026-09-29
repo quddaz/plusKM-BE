@@ -27,6 +27,24 @@ public class EmergencyController {
         return NearbyEmergenciesResponse.from(emergencyService.findNearbyEmergencies(searchEmergencyRequest));
     }
 
+    @PostMapping("/search/optimized")
+    @ResponseStatus(HttpStatus.OK)
+    public NearbyEmergenciesResponse findNearbyEmergenciesOptimized(
+        @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
+        return NearbyEmergenciesResponse.from(
+            emergencyService.findNearbyEmergenciesOptimized(searchEmergencyRequest)
+        );
+    }
+
+    @PostMapping("/search/indexed-bounds")
+    @ResponseStatus(HttpStatus.OK)
+    public NearbyEmergenciesResponse findNearbyEmergenciesIndexedBounds(
+        @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
+        return NearbyEmergenciesResponse.from(
+            emergencyService.findNearbyEmergenciesIndexedBounds(searchEmergencyRequest)
+        );
+    }
+
     @PostMapping("/beds")
     @ResponseStatus(HttpStatus.OK)
     public EmergencyBedsResponse findBeds(@Valid @RequestBody EmergencyBedSearchRequest request) {

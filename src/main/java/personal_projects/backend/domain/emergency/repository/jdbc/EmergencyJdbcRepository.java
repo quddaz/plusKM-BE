@@ -44,6 +44,80 @@ public class EmergencyJdbcRepository {
             ), polygon);
     }
 
+    public List<NearbyEmergencyResponse> findNearbyEmergenciesOptimized(
+        double longitude,
+        double latitude,
+        double radiusKilometers
+    ) {
+        double latitudeDistance = radiusKilometers / 111.32;
+        double longitudeDistance = radiusKilometers / (111.32 * Math.cos(Math.toRadians(latitude)));
+        String polygon = createPolygon(longitude, latitude, longitudeDistance, latitudeDistance);
+        double radiusMeters = radiusKilometers * 1_000;
+
+        String sql = """
+            SELECT id, hpid, name, address, tel AS phone_number,
+                   ST_X(coordinate) AS longitude, ST_Y(coordinate) AS latitude,
+                   ST_Distance_Sphere(
+                       coordinate,
+                       ST_SRID(POINT(?, ?), 4326)
+                   ) AS distance_meters
+            FROM emergency FORCE INDEX (idx_emergency_coordinate)
+            WHERE active = true
+              AND MBRContains(
+                    ST_GeomFromText(?, 4326, 'axis-order=long-lat'),
+                    coordinate
+                  )
+              AND ST_Distance_Sphere(
+                    coordinate,
+                    ST_SRID(POINT(?, ?), 4326)
+                  ) <= ?
+            ORDER BY distance_meters
+            """;
+
+        return jdbcTemplate.query(sql, (resultSet, rowNumber) ->
+            new NearbyEmergencyResponse(
+                resultSet.getLong("id"),
+                resultSet.getString("hpid"),
+                resultSet.getString("name"),
+                resultSet.getString("address"),
+                resultSet.getString("phone_number"),
+                resultSet.getDouble("longitude"),
+                resultSet.getDouble("latitude")
+            ), longitude, latitude, polygon, longitude, latitude, radiusMeters);
+    }
+
+    public List<NearbyEmergencyResponse> findNearbyEmergenciesIndexedBounds(
+        double longitude,
+        double latitude,
+        double radiusKilometers
+    ) {
+        double latitudeDistance = radiusKilometers / 111.32;
+        double longitudeDistance = radiusKilometers / (111.32 * Math.cos(Math.toRadians(latitude)));
+        String polygon = createPolygon(longitude, latitude, longitudeDistance, latitudeDistance);
+
+        String sql = """
+            SELECT id, hpid, name, address, tel AS phone_number,
+                   ST_X(coordinate) AS longitude, ST_Y(coordinate) AS latitude
+            FROM emergency FORCE INDEX (idx_emergency_coordinate)
+            WHERE active = true
+              AND MBRContains(
+                    ST_GeomFromText(?, 4326, 'axis-order=long-lat'),
+                    coordinate
+                  )
+            """;
+
+        return jdbcTemplate.query(sql, (resultSet, rowNumber) ->
+            new NearbyEmergencyResponse(
+                resultSet.getLong("id"),
+                resultSet.getString("hpid"),
+                resultSet.getString("name"),
+                resultSet.getString("address"),
+                resultSet.getString("phone_number"),
+                resultSet.getDouble("longitude"),
+                resultSet.getDouble("latitude")
+            ), polygon);
+    }
+
     public EmergencyDetailResponse findEmergencyDetail(Long emergencyId) {
         String sql = """
             SELECT p.id, p.name, p.address, p.tel AS phone_number

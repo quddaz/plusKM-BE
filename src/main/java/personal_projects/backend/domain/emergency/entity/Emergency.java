@@ -36,7 +36,8 @@ public class Emergency {
 
     private boolean active;
 
-    @Column(columnDefinition = "POINT")
+    // MySQL SPATIAL 인덱스가 좌표계를 활용하도록 운영 DDL과 동일하게 고정한다.
+    @Column(columnDefinition = "POINT SRID 4326", nullable = false)
     private Point coordinate;
 
     public static Emergency create(String hpid, String name, String address, String phoneNumber, Point coordinate) {

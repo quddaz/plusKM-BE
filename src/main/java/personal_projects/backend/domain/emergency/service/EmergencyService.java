@@ -37,6 +37,22 @@ public class EmergencyService {
         );
     }
 
+    public List<NearbyEmergencyResponse> findNearbyEmergenciesOptimized(NearbyEmergencySearchRequest request) {
+        return emergencyRepository.findNearbyEmergenciesOptimized(
+            request.longitude(),
+            request.latitude(),
+            request.radiusKilometers()
+        );
+    }
+
+    public List<NearbyEmergencyResponse> findNearbyEmergenciesIndexedBounds(NearbyEmergencySearchRequest request) {
+        return emergencyRepository.findNearbyEmergenciesIndexedBounds(
+            request.longitude(),
+            request.latitude(),
+            request.radiusKilometers()
+        );
+    }
+
     public EmergencyDetailResponse findEmergencyDetail(Long emergencyId) {
         return emergencyRepository.findEmergencyDetail(emergencyId);
     }

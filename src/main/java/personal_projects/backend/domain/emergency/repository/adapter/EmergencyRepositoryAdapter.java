@@ -53,6 +53,32 @@ public class EmergencyRepositoryAdapter implements EmergencyRepository {
     }
 
     @Override
+    public List<NearbyEmergencyResponse> findNearbyEmergenciesOptimized(
+        double longitude,
+        double latitude,
+        double radiusKilometers
+    ) {
+        return jdbcRepository.findNearbyEmergenciesOptimized(
+            longitude,
+            latitude,
+            radiusKilometers
+        );
+    }
+
+    @Override
+    public List<NearbyEmergencyResponse> findNearbyEmergenciesIndexedBounds(
+        double longitude,
+        double latitude,
+        double radiusKilometers
+    ) {
+        return jdbcRepository.findNearbyEmergenciesIndexedBounds(
+            longitude,
+            latitude,
+            radiusKilometers
+        );
+    }
+
+    @Override
     public EmergencyDetailResponse findEmergencyDetail(Long emergencyId) {
         return jdbcRepository.findEmergencyDetail(emergencyId);
     }

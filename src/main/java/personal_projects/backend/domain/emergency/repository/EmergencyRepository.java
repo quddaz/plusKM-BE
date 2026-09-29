@@ -23,5 +23,17 @@ public interface EmergencyRepository {
         double radiusKilometers
     );
 
+    List<NearbyEmergencyResponse> findNearbyEmergenciesOptimized(
+        double longitude,
+        double latitude,
+        double radiusKilometers
+    );
+
+    List<NearbyEmergencyResponse> findNearbyEmergenciesIndexedBounds(
+        double longitude,
+        double latitude,
+        double radiusKilometers
+    );
+
     EmergencyDetailResponse findEmergencyDetail(Long emergencyId);
 }
