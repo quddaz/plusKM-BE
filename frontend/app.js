@@ -8,6 +8,7 @@ const resultCount = document.querySelector("#resultCount");
 const resultType = document.querySelector("#resultType");
 const resultNotice = document.querySelector("#resultNotice");
 const mapLegend = document.querySelector(".map-legend");
+const emergencyCall = document.querySelector("#emergencyCall");
 const NAVER_MAP_CLIENT_ID = "cjtt3s316g";
 const MAP_LOAD_DELAYS = [0, 1500, 4000];
 const API_BASE_URL = (
@@ -113,7 +114,7 @@ async function loadPlaces() {
       body: JSON.stringify({
         ...state.location,
         radiusKilometers: state.radiusKilometers,
-        category: state.searchMode
+        category: "ALL"
       })
     });
     if (!response.ok) throw new Error("API 연결 실패");
@@ -137,7 +138,7 @@ function loadNearby() {
 }
 
 function modeLabel() {
-  return { EMERGENCY: "응급실", HOSPITAL: "병원", PHARMACY: "약국" }[state.searchMode];
+  return { EMERGENCY: "응급실", MEDICAL: "병원·약국" }[state.searchMode];
 }
 
 async function refreshBeds() {
@@ -177,6 +178,7 @@ function render() {
     ? "병상 정보는 방문 전 전화로 확인해 주세요."
     : "운영 여부와 진료·조제 시간은 방문 전 전화로 확인해 주세요.";
   mapLegend.hidden = state.searchMode !== "EMERGENCY";
+  emergencyCall.hidden = state.searchMode !== "EMERGENCY";
   list.innerHTML = hospitals.length ? hospitals.map(card).join("")
     : `<p class="empty">반경 안의 ${modeLabel()} 정보를 확인할 수 없습니다.</p>`;
   renderMarkers(hospitals);
@@ -291,8 +293,9 @@ function renderMarkers(hospitals) {
   if (state.mapProvider === "naver") {
     state.markers = hospitals.map(hospital => {
       const markerStatus = needsVerification(hospital) ? " needs-verification" : "";
+      const markerMode = markerModeClass(hospital);
       const marker = new naver.maps.Marker({ position: new naver.maps.LatLng(hospital.latitude, hospital.longitude), map: state.map,
-        title: hospital.name, icon: { content: `<div class="hospital-marker${markerStatus}"><b>+</b></div>`, anchor: new naver.maps.Point(19, 42) } });
+        title: hospital.name, icon: { content: `<div class="hospital-marker ${markerMode}${markerStatus}"><b>${markerText(hospital)}</b></div>`, anchor: new naver.maps.Point(19, 42) } });
       naver.maps.Event.addListener(marker, "click", () => selectHospital(hospital));
       return marker;
     });
@@ -300,11 +303,21 @@ function renderMarkers(hospitals) {
   }
   state.markers = hospitals.map(hospital => {
     const markerStatus = needsVerification(hospital) ? " needs-verification" : "";
-    const icon = L.divIcon({ className: "marker-shell", html: `<div class="hospital-marker${markerStatus}"><b>+</b></div>`, iconSize: [38, 46], iconAnchor: [19, 43] });
+    const icon = L.divIcon({ className: "marker-shell", html: `<div class="hospital-marker ${markerModeClass(hospital)}${markerStatus}"><b>${markerText(hospital)}</b></div>`, iconSize: [38, 46], iconAnchor: [19, 43] });
     return L.marker([hospital.latitude, hospital.longitude], { icon }).addTo(state.map)
       .bindTooltip(hospital.name, { direction: "top", offset: [0, -36] })
       .on("click", () => selectHospital(hospital));
   });
+}
+
+function markerModeClass(place) {
+  if (state.searchMode === "EMERGENCY") return "emergency";
+  return place.category === "PHARMACY" ? "pharmacy" : "hospital";
+}
+
+function markerText(place) {
+  if (state.searchMode === "EMERGENCY") return "+";
+  return place.category === "PHARMACY" ? "약" : "병";
 }
 
 function needsVerification(hospital) {
@@ -488,14 +501,25 @@ document.querySelector("#radiusSelect").addEventListener("change", event => {
   fitMapToRadius();
   loadNearby();
 });
-document.querySelector("#placeTypeSelect").addEventListener("change", event => {
-  state.searchMode = event.target.value;
+function switchSearchMode(searchMode) {
+  if (state.searchMode === searchMode) {
+    document.querySelector("#bottomSheet").classList.add("expanded");
+    return setTimeout(resizeMap, 300);
+  }
+  state.searchMode = searchMode;
   state.hospitals = [];
-  clearRoute();
   stopRouteGuide();
+  closeGuardianModal();
+  document.querySelectorAll("[data-search-mode]").forEach(button => {
+    const active = button.dataset.searchMode === searchMode;
+    button.classList.toggle("active", active);
+    button.toggleAttribute("aria-current", active);
+  });
+  document.querySelector("#bottomSheet").classList.add("expanded");
   render();
   loadNearby();
-});
+  setTimeout(resizeMap, 300);
+}
 document.querySelector("#addressSearch").addEventListener("submit", searchAddress);
 document.querySelector("#closeRoute").addEventListener("click", () => {
   stopRouteGuide();
@@ -536,10 +560,8 @@ async function start() {
 function configureGuardianUi() {
   document.querySelector("#loginButton").href = `${API_BASE_URL}/oauth2/authorization/google`;
   document.querySelector("#guardianOpen").addEventListener("click", openGuardianModal);
-  document.querySelector("#hospitalNav").addEventListener("click", () => {
-    closeGuardianModal();
-    document.querySelector("#bottomSheet").classList.add("expanded");
-    setTimeout(resizeMap, 300);
+  document.querySelectorAll("[data-search-mode]").forEach(button => {
+    button.addEventListener("click", () => switchSearchMode(button.dataset.searchMode));
   });
   document.querySelector("#guardianClose").addEventListener("click", closeGuardianModal);
   document.querySelector("#guardianModal").addEventListener("click", event => {

@@ -25,16 +25,9 @@
             <span>⌕</span><input id="addressInput" aria-label="주소 검색" placeholder="주소를 검색하세요" autocomplete="street-address" />
             <button type="submit">검색</button>
           </form>
-          <a class="emergency-call" href="tel:119">119</a>
+          <a class="emergency-call" id="emergencyCall" href="tel:119">119</a>
           <div class="map-controls">
             <button id="myLocationButton" type="button">⌖ 내 위치</button>
-            <label>종류
-              <select id="placeTypeSelect" aria-label="시설 종류">
-                <option value="EMERGENCY">응급실</option>
-                <option value="HOSPITAL">병원</option>
-                <option value="PHARMACY">약국</option>
-              </select>
-            </label>
             <label>반경
               <select id="radiusSelect" aria-label="검색 반경">
                 <option value="1">1km</option><option value="3">3km</option>
@@ -80,8 +73,11 @@
           <div class="hospital-list" id="hospitalList" aria-live="polite"></div>
         </section>
         <nav class="bottom-nav" aria-label="주요 메뉴">
-          <button class="active" id="hospitalNav" type="button" aria-current="page">
-            <span aria-hidden="true">＋</span><strong>응급실</strong>
+          <button class="active" data-search-mode="EMERGENCY" type="button" aria-current="page">
+            <span aria-hidden="true">✚</span><strong>응급실</strong>
+          </button>
+          <button data-search-mode="MEDICAL" type="button">
+            <span aria-hidden="true">⌂</span><strong>병원·약국</strong>
           </button>
           <button id="guardianOpen" type="button">
             <span aria-hidden="true">♡</span><strong>보호자</strong>
@@ -90,11 +86,11 @@
       </div>
     </section>
     <aside class="intro">
-      <p>가까운 응급실을 빠르게</p>
-      <h2>내 위치에서 응급실을 찾고<br />자동차 경로까지 확인하세요.</h2>
+      <p>가까운 의료기관을 빠르게</p>
+      <h2>내 위치에서 응급실·병원·약국을 찾고<br />자동차 경로까지 확인하세요.</h2>
       <ul>
         <li>지도를 눌러 출발 위치 선택</li>
-        <li>최대 30km 주변 응급실 탐색</li>
+        <li>최대 30km 주변 의료기관 탐색</li>
         <li>전화 연결과 자동차 경로 확인</li>
         <li>보호자에게 현재 위치 문자 작성</li>
       </ul>
