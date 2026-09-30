@@ -115,6 +115,38 @@ public class EmergencyJdbcRepository {
             ), polygon);
     }
 
+    /**
+     * MySQL의 지리 좌표 ST_Buffer가 생성한 원형 버퍼에 ST_Within을 적용하는 실험 경로다.
+     * SPATIAL 인덱스는 MBRContains 계열에서만 직접 후보 선별에 활용되므로 운영 경로로는 사용하지 않는다.
+     */
+    public List<NearbyEmergencyResponse> findNearbyEmergenciesCircleWithin(
+        double longitude,
+        double latitude,
+        double radiusKilometers
+    ) {
+        String sql = """
+            SELECT id, hpid, name, address, tel AS phone_number,
+                   ST_X(coordinate) AS longitude, ST_Y(coordinate) AS latitude
+            FROM emergency
+            WHERE active = true
+              AND ST_Within(
+                    coordinate,
+                    ST_Buffer(ST_SRID(POINT(?, ?), 4326), ?)
+                  )
+            """;
+
+        return jdbcTemplate.query(sql, (resultSet, rowNumber) ->
+            new NearbyEmergencyResponse(
+                resultSet.getLong("id"),
+                resultSet.getString("hpid"),
+                resultSet.getString("name"),
+                resultSet.getString("address"),
+                resultSet.getString("phone_number"),
+                resultSet.getDouble("longitude"),
+                resultSet.getDouble("latitude")
+            ), longitude, latitude, radiusKilometers * 1_000);
+    }
+
     public EmergencyDetailResponse findEmergencyDetail(Long emergencyId) {
         String sql = """
             SELECT p.id, p.name, p.address, p.tel AS phone_number
