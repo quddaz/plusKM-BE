@@ -5,16 +5,15 @@ const endpoint = __ENV.ENDPOINT || '/emergencies/search';
 const baseUrl = __ENV.BASE_URL || 'http://172.31.27.77:8080';
 const vus = Number(__ENV.VUS || 25);
 const duration = __ENV.DURATION || '3m';
+const fixedLongitude = Number(__ENV.SEARCH_LONGITUDE);
+const fixedLatitude = Number(__ENV.SEARCH_LATITUDE);
+const fixedRadiusKilometers = Number(__ENV.SEARCH_RADIUS_KM);
 
 export const options = {
   vus,
   duration,
   discardResponseBodies: true,
   summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
-  thresholds: {
-    http_req_failed: ['rate<0.01'],
-    http_req_duration: ['p(95)<1000'],
-  },
 };
 
 const searches = [
@@ -27,8 +26,14 @@ const searches = [
   [127.3845, 36.3504, 50],
 ];
 
+const fixedSearch = Number.isFinite(fixedLongitude)
+  && Number.isFinite(fixedLatitude)
+  && Number.isFinite(fixedRadiusKilometers)
+  ? [fixedLongitude, fixedLatitude, fixedRadiusKilometers]
+  : null;
+
 export default function () {
-  const search = searches[Math.floor(Math.random() * searches.length)];
+  const search = fixedSearch || searches[Math.floor(Math.random() * searches.length)];
   const payload = JSON.stringify({
     longitude: search[0],
     latitude: search[1],

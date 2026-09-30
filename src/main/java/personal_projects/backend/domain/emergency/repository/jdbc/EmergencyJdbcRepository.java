@@ -67,10 +67,7 @@ public class EmergencyJdbcRepository {
                     ST_GeomFromText(?, 4326, 'axis-order=long-lat'),
                     coordinate
                   )
-              AND ST_Distance_Sphere(
-                    coordinate,
-                    ST_SRID(POINT(?, ?), 4326)
-                  ) <= ?
+            HAVING distance_meters <= ?
             ORDER BY distance_meters
             """;
 
@@ -83,7 +80,7 @@ public class EmergencyJdbcRepository {
                 resultSet.getString("phone_number"),
                 resultSet.getDouble("longitude"),
                 resultSet.getDouble("latitude")
-            ), longitude, latitude, polygon, longitude, latitude, radiusMeters);
+            ), longitude, latitude, polygon, radiusMeters);
     }
 
     public List<NearbyEmergencyResponse> findNearbyEmergenciesIndexedBounds(
