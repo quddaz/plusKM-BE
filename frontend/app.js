@@ -9,6 +9,8 @@ const resultType = document.querySelector("#resultType");
 const resultNotice = document.querySelector("#resultNotice");
 const mapLegend = document.querySelector(".map-legend");
 const emergencyCall = document.querySelector("#emergencyCall");
+const radiusSelect = document.querySelector("#radiusSelect");
+const MEDICAL_MAX_RADIUS_KM = 10;
 const NAVER_MAP_CLIENT_ID = "cjtt3s316g";
 const MAP_LOAD_DELAYS = [0, 1500, 4000];
 const API_BASE_URL = (
@@ -495,20 +497,38 @@ function resizeMap() {
   if (state.mapProvider === "naver") naver.maps.Event.trigger(state.map, "resize");
   if (state.mapProvider === "leaflet") state.map.invalidateSize();
 }
-document.querySelector("#radiusSelect").addEventListener("change", event => {
-  state.radiusKilometers = Number(event.target.value);
+radiusSelect.addEventListener("change", event => {
+  state.radiusKilometers = state.searchMode === "MEDICAL"
+    ? Math.min(Number(event.target.value), MEDICAL_MAX_RADIUS_KM)
+    : Number(event.target.value);
+  radiusSelect.value = String(state.radiusKilometers);
   locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
   fitMapToRadius();
   loadNearby();
 });
+function updateRadiusOptions() {
+  radiusSelect.querySelectorAll("option").forEach(option => {
+    const unavailable = state.searchMode === "MEDICAL"
+      && Number(option.value) > MEDICAL_MAX_RADIUS_KM;
+    option.hidden = unavailable;
+    option.disabled = unavailable;
+  });
+  if (state.searchMode === "MEDICAL" && state.radiusKilometers > MEDICAL_MAX_RADIUS_KM) {
+    state.radiusKilometers = MEDICAL_MAX_RADIUS_KM;
+    radiusSelect.value = String(state.radiusKilometers);
+    locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
+  }
+}
 function switchSearchMode(searchMode) {
   if (state.searchMode === searchMode) {
     document.querySelector("#bottomSheet").classList.add("expanded");
     return setTimeout(resizeMap, 300);
   }
   state.searchMode = searchMode;
+  updateRadiusOptions();
   state.hospitals = [];
   stopRouteGuide();
+  fitMapToRadius();
   closeGuardianModal();
   document.querySelectorAll("[data-search-mode]").forEach(button => {
     const active = button.dataset.searchMode === searchMode;

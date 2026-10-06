@@ -9,7 +9,7 @@ import personal_projects.backend.domain.place.entity.PlaceCategory;
 public record NearbyPlaceSearchRequest(
     @DecimalMin("-180.0") @DecimalMax("180.0") double longitude,
     @DecimalMin("-90.0") @DecimalMax("90.0") double latitude,
-    @Positive @DecimalMax("100.0") double radiusKilometers,
+    @Positive @DecimalMax("10.0") double radiusKilometers,
     @NotNull PlaceCategory category
 ) {
 }

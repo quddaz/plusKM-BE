@@ -45,7 +45,6 @@ public class PlaceJdbcRepository {
             """ + categoryCondition + """
             HAVING distance_meters <= ?
             ORDER BY distance_meters
-            LIMIT 200
             """;
 
         Object[] parameters = request.category() == PlaceCategory.ALL
