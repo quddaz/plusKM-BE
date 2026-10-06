@@ -1,6 +1,5 @@
 package personal_projects.backend.domain.place.dto.request;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,14 +12,15 @@ import personal_projects.backend.domain.place.entity.PlaceCategory;
 class NearbyPlaceSearchRequestTest {
 
     @Test
-    void 병원과_약국의_검색_반경은_최대_10km이다() {
+    void 병원과_약국의_검색_반경은_최대_3km이다() {
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             Validator validator = factory.getValidator();
 
-            assertTrue(validator.validate(request(10.0)).isEmpty());
-            assertFalse(validator.validate(request(10.001)).isEmpty());
-            assertFalse(validator.validate(request(30.0)).isEmpty());
-            assertEquals(1, validator.validate(request(30.0)).size());
+            assertTrue(validator.validate(request(1.0)).isEmpty());
+            assertTrue(validator.validate(request(3.0)).isEmpty());
+            assertFalse(validator.validate(request(2.0)).isEmpty());
+            assertFalse(validator.validate(request(3.001)).isEmpty());
+            assertFalse(validator.validate(request(10.0)).isEmpty());
         }
     }
 
