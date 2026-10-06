@@ -206,7 +206,7 @@ function initializeNaverMap() {
   const center = new naver.maps.LatLng(state.location.latitude, state.location.longitude);
   state.mapProvider = "naver";
   state.map = new naver.maps.Map("map", { center, zoom: 13, zoomControl: false });
-  state.userMarker = new naver.maps.Marker({ position: center, map: state.map, title: "현재 위치",
+  state.userMarker = new naver.maps.Marker({ position: center, map: state.map, title: "현재 위치", zIndex: 1000,
     icon: { content: '<div class="current-marker"><span></span></div>', anchor: new naver.maps.Point(13, 13) } });
   naver.maps.Event.addListener(state.map, "click", event => selectLocation(event.coord));
   hideMapFallback();
@@ -222,9 +222,10 @@ function initializeFallbackMap() {
   const center = [state.location.latitude, state.location.longitude];
   state.mapProvider = "leaflet";
   state.map = L.map("map", { zoomControl: false }).setView(center, 13);
+  state.map.createPane("currentLocationPane").style.zIndex = "625";
   L.tileLayer("/api/map-tile?z={z}&x={x}&y={y}", { maxZoom: 19, attribution: "&copy; OpenStreetMap" }).addTo(state.map);
   state.userMarker = L.circleMarker(center, { radius: 9, color: "#fff", weight: 3,
-    fillColor: "#1769ff", fillOpacity: 1 }).addTo(state.map).bindTooltip("현재 위치");
+    fillColor: "#1769ff", fillOpacity: 1, pane: "currentLocationPane" }).addTo(state.map).bindTooltip("현재 위치");
   state.map.on("click", event => selectLocation(event.latlng));
   hideMapFallback();
   fitMapToRadius();
