@@ -21,7 +21,7 @@ class PlaceJdbcRepositoryTest {
         JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
         PlaceJdbcRepository repository = new PlaceJdbcRepository(jdbcTemplate);
 
-        repository.findNearby(new NearbyPlaceSearchRequest(127.1112, 37.3948, 10.0,
+        repository.findNearby(new NearbyPlaceSearchRequest(127.1112, 37.3948, 3.0,
             PlaceCategory.ALL));
 
         ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);

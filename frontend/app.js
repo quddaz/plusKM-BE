@@ -1,5 +1,6 @@
 const DEFAULT_LOCATION = { latitude: 37.5665, longitude: 126.9780 };
-const state = { location: DEFAULT_LOCATION, radiusKilometers: 10, searchMode: "EMERGENCY", hospitals: [], map: null,
+const state = { location: DEFAULT_LOCATION, radiusKilometers: 10,
+  radiusByMode: { EMERGENCY: 10, MEDICAL: 3 }, searchMode: "EMERGENCY", hospitals: [], map: null,
   mapProvider: null, markers: [], userMarker: null, route: null, selectedHospital: null };
 const list = document.querySelector("#hospitalList");
 const dataState = document.querySelector("#dataState");
@@ -10,7 +11,7 @@ const resultNotice = document.querySelector("#resultNotice");
 const mapLegend = document.querySelector(".map-legend");
 const emergencyCall = document.querySelector("#emergencyCall");
 const radiusSelect = document.querySelector("#radiusSelect");
-const MEDICAL_MAX_RADIUS_KM = 3;
+const RADIUS_OPTIONS_BY_MODE = { EMERGENCY: [1, 5, 10, 20, 30], MEDICAL: [1, 3] };
 const NAVER_MAP_CLIENT_ID = "cjtt3s316g";
 const MAP_LOAD_DELAYS = [0, 1500, 4000];
 const API_BASE_URL = (
@@ -498,9 +499,11 @@ function resizeMap() {
   if (state.mapProvider === "leaflet") state.map.invalidateSize();
 }
 radiusSelect.addEventListener("change", event => {
-  state.radiusKilometers = state.searchMode === "MEDICAL"
-    ? Math.min(Number(event.target.value), MEDICAL_MAX_RADIUS_KM)
-    : Number(event.target.value);
+  const selectedRadius = Number(event.target.value);
+  if (RADIUS_OPTIONS_BY_MODE[state.searchMode].includes(selectedRadius)) {
+    state.radiusKilometers = selectedRadius;
+    state.radiusByMode[state.searchMode] = selectedRadius;
+  }
   radiusSelect.value = String(state.radiusKilometers);
   locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
   fitMapToRadius();
@@ -508,16 +511,11 @@ radiusSelect.addEventListener("change", event => {
 });
 function updateRadiusOptions() {
   radiusSelect.querySelectorAll("option").forEach(option => {
-    const unavailable = state.searchMode === "MEDICAL"
-      && Number(option.value) > MEDICAL_MAX_RADIUS_KM;
+    const unavailable = !RADIUS_OPTIONS_BY_MODE[state.searchMode].includes(Number(option.value));
     option.hidden = unavailable;
     option.disabled = unavailable;
   });
-  if (state.searchMode === "MEDICAL" && state.radiusKilometers > MEDICAL_MAX_RADIUS_KM) {
-    state.radiusKilometers = MEDICAL_MAX_RADIUS_KM;
-    radiusSelect.value = String(state.radiusKilometers);
-    locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
-  }
+  radiusSelect.value = String(state.radiusKilometers);
 }
 function switchSearchMode(searchMode) {
   if (state.searchMode === searchMode) {
@@ -525,7 +523,9 @@ function switchSearchMode(searchMode) {
     return setTimeout(resizeMap, 300);
   }
   state.searchMode = searchMode;
+  state.radiusKilometers = state.radiusByMode[searchMode];
   updateRadiusOptions();
+  locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
   state.hospitals = [];
   stopRouteGuide();
   fitMapToRadius();
@@ -573,6 +573,7 @@ async function searchAddress(event) {
 }
 async function start() {
   acceptLoginToken();
+  updateRadiusOptions();
   configureGuardianUi();
   locate();
 }
