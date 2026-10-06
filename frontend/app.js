@@ -518,10 +518,11 @@ function updateRadiusOptions() {
   radiusSelect.value = String(state.radiusKilometers);
 }
 function switchSearchMode(searchMode) {
-  if (state.searchMode === searchMode) {
-    document.querySelector("#bottomSheet").classList.add("expanded");
-    return setTimeout(resizeMap, 300);
-  }
+  const sheet = document.querySelector("#bottomSheet");
+  const wasExpanded = sheet.classList.contains("expanded");
+  sheet.classList.remove("expanded");
+  if (wasExpanded) setTimeout(resizeMap, 300);
+  if (state.searchMode === searchMode) return;
   state.searchMode = searchMode;
   state.radiusKilometers = state.radiusByMode[searchMode];
   updateRadiusOptions();
@@ -535,10 +536,8 @@ function switchSearchMode(searchMode) {
     button.classList.toggle("active", active);
     button.toggleAttribute("aria-current", active);
   });
-  document.querySelector("#bottomSheet").classList.add("expanded");
   render();
   loadNearby();
-  setTimeout(resizeMap, 300);
 }
 document.querySelector("#addressSearch").addEventListener("submit", searchAddress);
 document.querySelector("#closeRoute").addEventListener("click", () => {
