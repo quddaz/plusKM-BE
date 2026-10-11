@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,13 +18,18 @@ import personal_projects.backend.domain.auth.filter.JwtAccessDeniedHandler;
 import personal_projects.backend.domain.auth.filter.JwtAuthenticationEntryPoint;
 import personal_projects.backend.domain.auth.filter.JwtAuthenticationFilter;
 import personal_projects.backend.domain.auth.handler.OAuth2LoginSuccessHandler;
+import personal_projects.backend.domain.auth.handler.OAuth2LoginFailureHandler;
+import personal_projects.backend.domain.auth.repository.CookieOAuth2AuthorizationRequestRepository;
 import personal_projects.backend.domain.auth.service.OAuth2LoginUserService;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
+    private final OAuth2LoginFailureHandler oauth2LoginFailureHandler;
+    private final CookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
     private final OAuth2LoginUserService oauth2LoginUserService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
@@ -37,7 +43,11 @@ public class SecurityConfig {
         "/webjars/**",
         "/global/**",
         "/actuator/**",
-        "/auth/**"
+        "/auth/**",
+        "/oauth2/**",
+        "/login/**",
+        "/emergencies/**",
+        "/places/search"
     };
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -53,9 +63,12 @@ public class SecurityConfig {
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증되지 않은 사용자가 보호된 리소스에 액세스 할 때 호출
                 .accessDeniedHandler(jwtAccessDeniedHandler)) // 권한이 없는 사용자가 보호된 리소스에 액세스 할 때 호출
             .oauth2Login(oauth2 -> oauth2
+                .authorizationEndpoint(endpoint -> endpoint
+                    .authorizationRequestRepository(authorizationRequestRepository))
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
                     .userService(oauth2LoginUserService))
-                .successHandler(oauth2LoginSuccessHandler))
+                .successHandler(oauth2LoginSuccessHandler)
+                .failureHandler(oauth2LoginFailureHandler))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(PUBLIC_ENDPOINTS).permitAll() // 화이트 리스트를 제외하고 모두 인증
                 .anyRequest().authenticated());

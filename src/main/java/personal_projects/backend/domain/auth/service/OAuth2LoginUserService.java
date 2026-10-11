@@ -6,11 +6,10 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import personal_projects.backend.domain.auth.dto.AuthenticatedUserPrincipal;
 import personal_projects.backend.domain.auth.dto.social.GoogleOAuth2UserInfo;
 import personal_projects.backend.domain.auth.dto.social.OAuth2UserInfo;
-import personal_projects.backend.common.exception.BusinessException;
-import personal_projects.backend.domain.auth.exception.code.AuthErrorCode;
 import personal_projects.backend.domain.user.entity.User;
 import personal_projects.backend.domain.user.repository.UserRepository;
 
@@ -35,12 +34,17 @@ public class OAuth2LoginUserService extends DefaultOAuth2UserService {
     private OAuth2UserInfo resolveUserInfo(String registrationId, Map<String, Object> attributes) {
         return switch (registrationId) {
             case "google" -> new GoogleOAuth2UserInfo(attributes);
-            default -> throw new BusinessException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER);
+            default -> throw new IllegalArgumentException("지원하지 않는 OAuth 제공자입니다.");
         };
     }
 
     private User findOrCreateUser(OAuth2UserInfo userInfo) {
         return userRepository.findBySocialId(userInfo.providerId())
             .orElseGet(() -> userRepository.save(User.fromOAuth2UserInfo(userInfo)));
+    }
+
+    @Transactional
+    public User findOrCreateGoogleUser(Map<String, Object> attributes) {
+        return findOrCreateUser(new GoogleOAuth2UserInfo(attributes));
     }
 }
