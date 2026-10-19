@@ -36,3 +36,12 @@ out/
 ### VS Code ###
 .vscode/
 .env.local
+
+# 벤치마크 측정 기록과 글 초안은 로컬에만 보관한다.
+/benchmark/*.md
+/benchmark/*.html
+/benchmark/blog-figures/
+/benchmark/render-blog-figures.py
+/benchmark/render-tistory-html.mjs
+/benchmark/db-comparison-app/
+/benchmark/db-comparison-results/
