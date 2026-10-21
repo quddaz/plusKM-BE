@@ -12,6 +12,7 @@
 | 병상 정보 | 공공데이터 API에서 5분 간격으로 갱신해 서버 메모리에 보관하고, 요청한 응급실 기관 코드(HPID)에 해당하는 정보만 반환합니다. |
 | 주변 병원·약국 | MySQL의 MBR 조건으로 후보를 줄인 뒤 구면 거리를 계산해 가까운 순으로 반환합니다. 검색 반경은 1km 또는 3km입니다. |
 | CSV 최신화 | Java에서 CSV를 배치로 읽어 임시 스테이징 테이블에 적재·검증하고, DB에서 변경 행만 병합합니다. 파일에서 빠진 장소는 삭제하지 않고 `active=false`로 남깁니다. |
+| 즐겨찾기 | 로그인 사용자별로 응급실·병원·약국을 저장하고 조회·해제합니다. CSV에서 빠져 비활성화된 장소도 저장 기록은 유지하되 현재 검색 대상이 아님을 표시합니다. |
 | 로그인·보호자 | Google OAuth2/JWT 인증, 보호자 전화번호 암호화 저장, 응급 안내 문구와 문자 앱을 여는 `sms:` 링크 생성을 지원합니다. 현재 보호자 API가 문자를 자동 발송하지는 않습니다. |
 
 ## 기술 스택
@@ -37,6 +38,9 @@ MongoDB·PostgreSQL 관련 주석은 과거 비교 실험의 기록이며, 현�
 | `GET` | `/emergencies/{id}` | 응급실 상세 정보 |
 | `POST` | `/emergencies/beds` | 지정한 응급실의 캐시된 병상 정보 조회 |
 | `POST` | `/places/search` | 주변 병원·약국 검색 |
+| `GET` | `/favorites` | 로그인 사용자의 응급실·병원·약국 즐겨찾기 목록 |
+| `PUT/DELETE` | `/favorites/emergencies/{id}` | 응급실 즐겨찾기 저장·해제 |
+| `PUT/DELETE` | `/favorites/places/{id}` | 병원·약국 즐겨찾기 저장·해제 |
 | `POST` | `/admin/places/import-csv` | CSV 최신화 (`ADMIN` 권한 필요) |
 | `GET/POST/PUT/DELETE` | `/guardians` | 로그인 사용자의 보호자 관리 |
 | `POST` | `/guardians/{guardianId}/emergency-message` | 안내 문구 및 `sms:` 링크 생성 |
