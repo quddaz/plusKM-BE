@@ -35,6 +35,11 @@ public class EmergencyRepositoryAdapter implements EmergencyRepository {
     }
 
     @Override
+    public List<Emergency> findAll() {
+        return jpaRepository.findAll();
+    }
+
+    @Override
     public void saveAll(List<Emergency> emergencies) {
         jpaRepository.saveAll(emergencies);
     }

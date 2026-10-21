@@ -663,7 +663,7 @@ function closeFavoritesModal() {
 
 async function loadFavorites() {
   try {
-    favorites = await authenticatedRequest("/favorites");
+    favorites = (await authenticatedRequest("/favorites")).map(normalizeHospitalCoordinate);
     renderFavorites();
     refreshFavoriteButtons();
   } catch (error) {
@@ -705,7 +705,7 @@ async function toggleFavorite(button) {
       showToast("즐겨찾기를 해제했어요.");
     } else {
       const saved = await authenticatedRequest(path, { method: "PUT" });
-      favorites = [saved, ...favorites.filter(item => item.id !== saved.id)];
+      favorites = [normalizeHospitalCoordinate(saved), ...favorites.filter(item => item.id !== saved.id)];
       showToast("즐겨찾기에 저장했어요.");
     }
     renderFavorites();
