@@ -61,6 +61,16 @@
               <div class="guardian-list" id="guardianList"></div>
             </section>
           </div>
+          <div class="modal-backdrop" id="favoritesModal" aria-hidden="true">
+            <section class="guardian-panel favorites-panel" role="dialog" aria-modal="true" aria-labelledby="favoritesTitle">
+              <header><div><small>나중에 다시 찾기</small><h2 id="favoritesTitle">즐겨찾기</h2></div><button id="favoritesClose" type="button" aria-label="닫기">×</button></header>
+              <div class="guardian-auth" id="favoritesAuth" hidden>
+                <p>즐겨찾기를 저장하려면 로그인이 필요해요.</p>
+                <a id="favoritesLoginButton" href="#">Google로 로그인</a>
+              </div>
+              <div class="favorites-list" id="favoritesList" aria-live="polite"></div>
+            </section>
+          </div>
           <p class="toast" id="toast" role="status"></p>
         </section>
         <section class="bottom-sheet" id="bottomSheet">
@@ -78,6 +88,9 @@
           </button>
           <button data-search-mode="MEDICAL" type="button">
             <span aria-hidden="true">⌂</span><strong>병원·약국</strong>
+          </button>
+          <button id="favoritesOpen" type="button">
+            <span aria-hidden="true">★</span><strong>즐겨찾기</strong>
           </button>
           <button id="guardianOpen" type="button">
             <span aria-hidden="true">♡</span><strong>보호자</strong>

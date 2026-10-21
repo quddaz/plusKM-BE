@@ -21,6 +21,7 @@ const API_BASE_URL = (
 ).replace(/\/$/, "");
 let accessToken = localStorage.getItem("pluskmAccessToken") || "";
 let guardians = [];
+let favorites = [];
 let bedRefreshInFlight = false;
 
 function acceptLoginToken() {
@@ -188,7 +189,26 @@ function render() {
 }
 
 function card(hospital) {
-  return `<article class="card" data-hospital-id="${hospital.id}"><div class="card-head"><h3>${escapeHtml(hospital.name)}</h3><span class="distance">${hospital.distance.toFixed(1)}km</span></div><p class="address">${escapeHtml(hospital.address)}</p><div class="actions"><a class="call" href="tel:${hospital.phoneNumber}">전화하기</a><button class="route" data-route-id="${hospital.id}">경로 보기</button></div></article>`;
+  return `<article class="card" data-hospital-id="${hospital.id}"><div class="card-head"><h3>${escapeHtml(hospital.name)}</h3><span class="distance">${hospital.distance.toFixed(1)}km</span>${favoriteButton(hospital)}</div><p class="address">${escapeHtml(hospital.address)}</p><div class="actions"><a class="call" href="tel:${hospital.phoneNumber}">전화하기</a><button class="route" data-route-id="${hospital.id}">경로 보기</button></div></article>`;
+}
+
+function favoriteType(item) { return item.hpid ? "EMERGENCY" : "PLACE"; }
+function isFavorite(type, id) { return favorites.some(item => item.type === type && String(item.targetId) === String(id)); }
+function favoriteButton(item) {
+  const type = favoriteType(item);
+  const saved = isFavorite(type, item.id);
+  const label = saved ? "즐겨찾기 해제" : "즐겨찾기 추가";
+  return `<button class="favorite-toggle${saved ? " saved" : ""}" type="button" data-favorite-type="${type}" data-favorite-id="${item.id}" aria-label="${label}" aria-pressed="${saved}">${saved ? "★" : "☆"}</button>`;
+}
+
+function refreshFavoriteButtons() {
+  document.querySelectorAll("[data-favorite-type][data-favorite-id]").forEach(button => {
+    const saved = isFavorite(button.dataset.favoriteType, button.dataset.favoriteId);
+    button.classList.toggle("saved", saved);
+    button.textContent = saved ? "★" : "☆";
+    button.setAttribute("aria-pressed", String(saved));
+    button.setAttribute("aria-label", saved ? "즐겨찾기 해제" : "즐겨찾기 추가");
+  });
 }
 
 function escapeHtml(value) {
@@ -331,12 +351,12 @@ function needsVerification(hospital) {
 
 function selectHospital(hospital) {
   state.selectedHospital = hospital;
-  if (state.searchMode !== "EMERGENCY") return selectPlace(hospital);
+  if (!hospital.hpid) return selectPlace(hospital);
   const availability = hospital.availability;
   const detail = document.querySelector("#hospitalDetail");
   detail.classList.remove("route-mode");
   detail.innerHTML = `<button class="detail-close" type="button" aria-label="닫기">×</button>
-    <div class="detail-head"><div><small>선택한 응급실</small><h2>${escapeHtml(hospital.name)}</h2></div><span>${distanceInKilometers(state.location, hospital).toFixed(1)}km</span></div>
+    <div class="detail-head"><div><small>선택한 응급실</small><h2>${escapeHtml(hospital.name)}</h2></div><span>${distanceInKilometers(state.location, hospital).toFixed(1)}km</span>${favoriteButton(hospital)}</div>
     <p>${escapeHtml(hospital.address)}</p>
     <div class="bed-grid">${bedItem("응급실", availability?.emergencyRoom)}${bedItem("수술실", availability?.operatingRoom)}${bedItem("중환자실", availability?.intensiveCareUnit)}${bedItem("입원실", availability?.inpatientRoom)}</div>
     <small class="bed-updated">${availability ? `${formatUpdatedAt(availability.updatedAt)} 기준` : "실시간 병상 정보 확인 필요"}</small>
@@ -351,7 +371,7 @@ function selectPlace(place) {
   const detail = document.querySelector("#hospitalDetail");
   detail.classList.remove("route-mode");
   detail.innerHTML = `<button class="detail-close" type="button" aria-label="닫기">×</button>
-    <div class="detail-head"><div><small>선택한 ${modeLabel()}</small><h2>${escapeHtml(place.name)}</h2></div><span>${distanceInKilometers(state.location, place).toFixed(1)}km</span></div>
+    <div class="detail-head"><div><small>선택한 ${place.category === "PHARMACY" ? "약국" : "병원"}</small><h2>${escapeHtml(place.name)}</h2></div><span>${distanceInKilometers(state.location, place).toFixed(1)}km</span>${favoriteButton(place)}</div>
     <p>${escapeHtml(place.address)}</p>
     <div class="place-information"><span>시설 구분</span><strong>${escapeHtml(place.facilityType || modeLabel())}</strong></div>
     <div class="detail-actions"><a href="tel:${place.phoneNumber}">전화하기</a><button type="button" data-detail-route>길찾기</button></div>`;
@@ -404,11 +424,11 @@ function showRouteGuide(hospital, route) {
 
 function showRouteHospitalCard(hospital, route, minutes) {
   state.selectedHospital = hospital;
-  if (state.searchMode !== "EMERGENCY") return showRoutePlaceCard(hospital, route, minutes);
+  if (!hospital.hpid) return showRoutePlaceCard(hospital, route, minutes);
   const availability = hospital.availability;
   const detail = document.querySelector("#hospitalDetail");
   detail.innerHTML = `<div class="route-hospital-label"><span>이동 중인 응급실</span><strong>약 ${minutes}분 · ${(route.distance / 1000).toFixed(1)}km</strong></div>
-    <div class="detail-head"><div><h2>${escapeHtml(hospital.name)}</h2></div></div>
+    <div class="detail-head"><div><h2>${escapeHtml(hospital.name)}</h2></div>${favoriteButton(hospital)}</div>
     <p>${escapeHtml(hospital.address)}</p>
     <div class="bed-grid">${bedItem("응급실", availability?.emergencyRoom)}${bedItem("수술실", availability?.operatingRoom)}${bedItem("중환자실", availability?.intensiveCareUnit)}${bedItem("입원실", availability?.inpatientRoom)}</div>
     <div class="route-hospital-actions"><a href="tel:${hospital.phoneNumber}">전화하기</a><button class="guardian-action" type="button" data-route-guardian>보호자 문자</button><button class="route-stop" type="button" data-route-stop>길찾기 종료</button></div>`;
@@ -419,8 +439,8 @@ function showRouteHospitalCard(hospital, route, minutes) {
 
 function showRoutePlaceCard(place, route, minutes) {
   const detail = document.querySelector("#hospitalDetail");
-  detail.innerHTML = `<div class="route-hospital-label"><span>이동 중인 ${modeLabel()}</span><strong>약 ${minutes}분 · ${(route.distance / 1000).toFixed(1)}km</strong></div>
-    <div class="detail-head"><div><h2>${escapeHtml(place.name)}</h2></div></div>
+  detail.innerHTML = `<div class="route-hospital-label"><span>이동 중인 ${place.category === "PHARMACY" ? "약국" : "병원"}</span><strong>약 ${minutes}분 · ${(route.distance / 1000).toFixed(1)}km</strong></div>
+    <div class="detail-head"><div><h2>${escapeHtml(place.name)}</h2></div>${favoriteButton(place)}</div>
     <p>${escapeHtml(place.address)}</p>
     <div class="place-information"><span>시설 구분</span><strong>${escapeHtml(place.facilityType || modeLabel())}</strong></div>
     <div class="route-hospital-actions place-route-actions"><a href="tel:${place.phoneNumber}">전화하기</a><button class="route-stop" type="button" data-route-stop>길찾기 종료</button></div>`;
@@ -545,10 +565,19 @@ document.querySelector("#closeRoute").addEventListener("click", () => {
   stopRouteGuide();
 });
 list.addEventListener("click", event => {
+  if (event.target.closest("[data-favorite-type]")) return;
   const button = event.target.closest("[data-route-id]");
   if (!button) return;
   const hospital = state.hospitals.find(item => String(item.id) === button.dataset.routeId);
   if (hospital) showRoute(hospital);
+});
+document.querySelector("#hospitalDetail").addEventListener("click", event => {
+  const button = event.target.closest("[data-favorite-type]");
+  if (button) void toggleFavorite(button);
+});
+list.addEventListener("click", event => {
+  const button = event.target.closest("[data-favorite-type]");
+  if (button) void toggleFavorite(button);
 });
 
 async function searchAddress(event) {
@@ -575,6 +604,8 @@ async function start() {
   acceptLoginToken();
   updateRadiusOptions();
   configureGuardianUi();
+  configureFavoritesUi();
+  if (accessToken) void loadFavorites();
   locate();
 }
 
@@ -592,7 +623,117 @@ function configureGuardianUi() {
   document.querySelector("#guardianList").addEventListener("click", deleteGuardian);
 }
 
+function configureFavoritesUi() {
+  document.querySelector("#favoritesLoginButton").href = `${API_BASE_URL}/oauth2/authorization/google`;
+  document.querySelector("#favoritesOpen").addEventListener("click", openFavoritesModal);
+  document.querySelector("#favoritesClose").addEventListener("click", closeFavoritesModal);
+  document.querySelector("#favoritesModal").addEventListener("click", event => {
+    if (event.target.id === "favoritesModal") closeFavoritesModal();
+  });
+  document.querySelector("#favoritesList").addEventListener("click", async event => {
+    const removeButton = event.target.closest("[data-remove-favorite]");
+    if (removeButton) {
+      await removeFavorite(removeButton.dataset.removeFavorite);
+      return;
+    }
+    const routeButton = event.target.closest("[data-route-favorite]");
+    if (!routeButton) return;
+    const favorite = favorites.find(item => String(item.id) === routeButton.dataset.routeFavorite);
+    if (!favorite || !favorite.active) return;
+    closeFavoritesModal();
+    await showRoute({ ...favorite, id: favorite.targetId });
+  });
+}
+
+async function openFavoritesModal() {
+  closeGuardianModal();
+  const modal = document.querySelector("#favoritesModal");
+  modal.classList.add("visible");
+  modal.setAttribute("aria-hidden", "false");
+  document.querySelector("#favoritesAuth").hidden = Boolean(accessToken);
+  document.querySelector("#favoritesList").hidden = !accessToken;
+  if (accessToken) await loadFavorites();
+}
+
+function closeFavoritesModal() {
+  const modal = document.querySelector("#favoritesModal");
+  modal.classList.remove("visible");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+async function loadFavorites() {
+  try {
+    favorites = await authenticatedRequest("/favorites");
+    renderFavorites();
+    refreshFavoriteButtons();
+  } catch (error) {
+    favorites = [];
+    renderFavorites();
+    refreshFavoriteButtons();
+    document.querySelector("#favoritesAuth").hidden = Boolean(accessToken);
+    document.querySelector("#favoritesList").hidden = !accessToken;
+    showToast(error.message);
+  }
+}
+
+function renderFavorites() {
+  const container = document.querySelector("#favoritesList");
+  container.innerHTML = favorites.length ? favorites.map(item => {
+    const label = item.type === "EMERGENCY" ? "응급실" : item.category === "PHARMACY" ? "약국" : "병원";
+    const phone = String(item.phoneNumber || "").replace(/[^+\d]/g, "");
+    return `<article class="favorite-item">
+      <div class="favorite-item-head"><span>${label}${item.active ? "" : " · 현재 검색 대상 아님"}</span><button type="button" data-remove-favorite="${item.id}" aria-label="${escapeHtml(item.name)} 즐겨찾기 해제">★</button></div>
+      <strong>${escapeHtml(item.name)}</strong><p>${escapeHtml(item.address)}</p>
+      <div class="favorite-item-actions">${item.active && phone ? `<a href="tel:${phone}">전화하기</a>` : ""}<button type="button" data-route-favorite="${item.id}" ${item.active ? "" : "disabled"}>길찾기</button></div>
+    </article>`;
+  }).join("") : '<p class="empty">저장한 응급실·병원·약국이 없습니다.</p>';
+}
+
+async function toggleFavorite(button) {
+  if (!accessToken) {
+    await openFavoritesModal();
+    return showToast("즐겨찾기를 저장하려면 로그인해 주세요.");
+  }
+  const type = button.dataset.favoriteType;
+  const id = button.dataset.favoriteId;
+  const path = type === "EMERGENCY" ? `/favorites/emergencies/${id}` : `/favorites/places/${id}`;
+  button.disabled = true;
+  try {
+    if (isFavorite(type, id)) {
+      await authenticatedRequest(path, { method: "DELETE" });
+      favorites = favorites.filter(item => !(item.type === type && String(item.targetId) === id));
+      showToast("즐겨찾기를 해제했어요.");
+    } else {
+      const saved = await authenticatedRequest(path, { method: "PUT" });
+      favorites = [saved, ...favorites.filter(item => item.id !== saved.id)];
+      showToast("즐겨찾기에 저장했어요.");
+    }
+    renderFavorites();
+    refreshFavoriteButtons();
+  } catch (error) {
+    showToast(error.message);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function removeFavorite(favoriteId) {
+  const favorite = favorites.find(item => String(item.id) === favoriteId);
+  if (!favorite) return;
+  const path = favorite.type === "EMERGENCY"
+    ? `/favorites/emergencies/${favorite.targetId}`
+    : `/favorites/places/${favorite.targetId}`;
+  try {
+    await authenticatedRequest(path, { method: "DELETE" });
+    favorites = favorites.filter(item => String(item.id) !== favoriteId);
+    renderFavorites();
+    refreshFavoriteButtons();
+    showToast("즐겨찾기를 해제했어요.");
+  } catch (error) { showToast(error.message); }
+}
+
 async function openGuardianModal() {
+  closeFavoritesModal();
   document.querySelector("#guardianModal").classList.add("visible");
   document.querySelector("#guardianModal").setAttribute("aria-hidden", "false");
   document.querySelector("#guardianAuth").hidden = Boolean(accessToken);
@@ -605,7 +746,7 @@ function closeGuardianModal() {
   document.querySelector("#guardianModal").setAttribute("aria-hidden", "true");
 }
 
-async function guardianRequest(path, options = {}) {
+async function authenticatedRequest(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, ...(options.headers || {}) }
@@ -624,7 +765,7 @@ async function guardianRequest(path, options = {}) {
 
 async function loadGuardians() {
   try {
-    guardians = await guardianRequest("/guardians");
+    guardians = await authenticatedRequest("/guardians");
     renderGuardians();
   } catch (error) {
     showToast(error.message);
@@ -644,7 +785,7 @@ async function createGuardian(event) {
   const phoneNumber = document.querySelector("#guardianPhone").value.trim();
   if (!/^01[016789]-?\d{3,4}-?\d{4}$/.test(phoneNumber)) return showToast("휴대전화 번호를 확인해 주세요.");
   try {
-    await guardianRequest("/guardians", { method: "POST", body: JSON.stringify({
+    await authenticatedRequest("/guardians", { method: "POST", body: JSON.stringify({
       name: document.querySelector("#guardianName").value.trim(),
       relationship: document.querySelector("#guardianRelationship").value.trim(), phoneNumber
     }) });
@@ -658,7 +799,7 @@ async function deleteGuardian(event) {
   const button = event.target.closest("[data-delete-guardian]");
   if (!button) return;
   try {
-    await guardianRequest(`/guardians/${button.dataset.deleteGuardian}`, { method: "DELETE" });
+    await authenticatedRequest(`/guardians/${button.dataset.deleteGuardian}`, { method: "DELETE" });
     showToast("보호자를 삭제했어요.");
     await loadGuardians();
   } catch (error) { showToast(error.message); }
@@ -676,8 +817,8 @@ async function prepareGuardianMessage(hospital) {
     return showToast("활성 보호자를 먼저 등록해 주세요.");
   }
   try {
-    const result = await guardianRequest(`/guardians/${guardian.id}/emergency-message`, {
-      method: "POST", body: JSON.stringify({ emergencyHpid: String(hospital.id),
+    const result = await authenticatedRequest(`/guardians/${guardian.id}/emergency-message`, {
+      method: "POST", body: JSON.stringify({ emergencyHpid: hospital.hpid,
         longitude: state.location.longitude, latitude: state.location.latitude })
     });
     location.href = result.smsUri;

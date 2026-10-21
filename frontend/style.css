@@ -28,3 +28,18 @@
 .guardian-form[hidden],.guardian-auth[hidden]{display:none!important}
 .map-controls{gap:6px}.map-controls label{white-space:nowrap}.map-legend[hidden],.emergency-call[hidden]{display:none}.place-information{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;padding:11px 12px;border-radius:11px;background:#f3f6f4}.place-information span{color:#7b8781;font-size:9px}.place-information strong{font-size:11px}.route-hospital-actions.place-route-actions{grid-template-columns:1fr 1.4fr}
 .hospital-marker.hospital{background:linear-gradient(145deg,#3f94ff,#1769ff);box-shadow:0 5px 14px #1769ff55}.hospital-marker.pharmacy{background:linear-gradient(145deg,#23b98b,#07865c);box-shadow:0 5px 14px #07865c55}.hospital-marker.hospital b,.hospital-marker.pharmacy b{font-size:14px;font-family:"Noto Sans KR",sans-serif;font-weight:800}.bottom-nav{grid-template-columns:repeat(3,1fr);padding-left:18px;padding-right:18px}.bottom-nav span{font-size:19px;font-weight:700}.bottom-nav button{min-width:0}
+.bottom-nav{grid-template-columns:repeat(4,1fr);padding-left:8px;padding-right:8px}
+.card-head{grid-template-columns:minmax(0,1fr) auto 27px;align-items:center}
+.favorite-toggle{width:27px;height:27px;border:0;border-radius:9px;background:#f2f5f3;color:#8a958f;font:700 21px/1 "Noto Sans KR",sans-serif;cursor:pointer}
+.favorite-toggle.saved{background:#fff1d7;color:#e49a00}
+.favorite-toggle:disabled{opacity:.5;cursor:wait}
+.detail-head{gap:8px}.detail-head>div{min-width:0;flex:1}.detail-head .favorite-toggle{flex:none;margin-right:28px}.detail-head>span{flex:none}
+.favorites-list[hidden],.favorites-auth[hidden]{display:none!important}
+.favorites-list{display:grid;gap:9px;margin-top:14px}.favorites-panel{max-height:78%}
+.favorite-item{padding:12px;border:1px solid #e0e7e3;border-radius:14px;background:#fff}
+.favorite-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.favorite-item-head span{color:#7a8780;font-size:10px;font-weight:700}
+.favorite-item-head button{border:0;background:transparent;color:#e49a00;font-size:20px;cursor:pointer}
+.favorite-item>strong{display:block;margin-top:3px;font-size:13px}.favorite-item>p{margin:4px 0 9px;color:#7b8781;font-size:10px}
+.favorite-item-actions{display:flex;gap:7px}.favorite-item-actions a,.favorite-item-actions button{min-width:80px;height:32px;display:grid;place-items:center;padding:0 10px;border:0;border-radius:9px;background:#eef2f0;color:#34413b;text-decoration:none;font:700 10px "Noto Sans KR",sans-serif;cursor:pointer}
+.favorite-item-actions button{background:var(--red);color:#fff}.favorite-item-actions button:disabled{background:#e5eae7;color:#909a95;cursor:not-allowed}
