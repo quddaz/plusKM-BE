@@ -69,13 +69,6 @@ emergency:
 
 guardian:
   encryption-key: ${GUARDIAN_PHONE_ENCRYPTION_KEY:}
-  sms:
-    enabled: ${NAVER_SENS_ENABLED:false}
-    endpoint: ${NAVER_SENS_ENDPOINT:https://sens.apigw.ntruss.com}
-    service-id: ${NAVER_SENS_SERVICE_ID:}
-    access-key: ${NAVER_CLOUD_ACCESS_KEY:}
-    secret-key: ${NAVER_CLOUD_SECRET_KEY:}
-    from: ${NAVER_SENS_FROM:}
 
 logging:
   file:

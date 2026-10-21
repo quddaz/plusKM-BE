@@ -3,6 +3,7 @@ package personal_projects.backend.domain.emergency.repository.jdbc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import personal_projects.backend.common.geo.GeoBoundingBox;
 import personal_projects.backend.domain.emergency.entity.Emergency;
 import personal_projects.backend.domain.emergency.dto.response.EmergencyDetailResponse;
 import personal_projects.backend.domain.emergency.dto.response.NearbyEmergencyResponse;
@@ -20,9 +21,7 @@ public class EmergencyJdbcRepository {
         double latitude,
         double radiusKilometers
     ) {
-        double latitudeDistance = radiusKilometers / 111.32;
-        double longitudeDistance = radiusKilometers / (111.32 * Math.cos(Math.toRadians(latitude)));
-        String polygon = createPolygon(longitude, latitude, longitudeDistance, latitudeDistance);
+        String polygon = GeoBoundingBox.aroundKilometers(longitude, latitude, radiusKilometers).toWktPolygon();
 
         String sql = """
             SELECT id, hpid, name, address, tel AS phone_number,
@@ -49,9 +48,7 @@ public class EmergencyJdbcRepository {
         double latitude,
         double radiusKilometers
     ) {
-        double latitudeDistance = radiusKilometers / 111.32;
-        double longitudeDistance = radiusKilometers / (111.32 * Math.cos(Math.toRadians(latitude)));
-        String polygon = createPolygon(longitude, latitude, longitudeDistance, latitudeDistance);
+        String polygon = GeoBoundingBox.aroundKilometers(longitude, latitude, radiusKilometers).toWktPolygon();
         double radiusMeters = radiusKilometers * 1_000;
 
         String sql = """
@@ -88,9 +85,7 @@ public class EmergencyJdbcRepository {
         double latitude,
         double radiusKilometers
     ) {
-        double latitudeDistance = radiusKilometers / 111.32;
-        double longitudeDistance = radiusKilometers / (111.32 * Math.cos(Math.toRadians(latitude)));
-        String polygon = createPolygon(longitude, latitude, longitudeDistance, latitudeDistance);
+        String polygon = GeoBoundingBox.aroundKilometers(longitude, latitude, radiusKilometers).toWktPolygon();
 
         String sql = """
             SELECT id, hpid, name, address, tel AS phone_number,
@@ -265,24 +260,4 @@ public class EmergencyJdbcRepository {
      *   { $project: { name: 1, distanceMeters: 1 } }
      * ]);
      */
-
-    private String createPolygon(
-        double longitude,
-        double latitude,
-        double longitudeDistance,
-        double latitudeDistance
-    ) {
-        double longitudeMin = longitude - longitudeDistance;
-        double longitudeMax = longitude + longitudeDistance;
-        double latitudeMin = latitude - latitudeDistance;
-        double latitudeMax = latitude + latitudeDistance;
-
-        return "POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))".formatted(
-            longitudeMin, latitudeMin,
-            longitudeMin, latitudeMax,
-            longitudeMax, latitudeMax,
-            longitudeMax, latitudeMin,
-            longitudeMin, latitudeMin
-        );
-    }
 }

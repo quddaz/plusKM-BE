@@ -9,10 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import personal_projects.backend.domain.place.dto.PlaceCsvRow;
 
-/**
- * CSV 반영용 임시 스테이징 테이블(place_csv_stage)과 운영 테이블(place) 병합 쿼리를 담당한다.
- * TEMPORARY TABLE은 커넥션 단위이므로 호출하는 쪽이 하나의 트랜잭션 안에서 사용해야 한다.
- */
 @Repository
 @RequiredArgsConstructor
 public class PlaceCsvStageRepository {

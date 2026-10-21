@@ -4,6 +4,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import personal_projects.backend.common.geo.GeoBoundingBox;
 import personal_projects.backend.domain.place.dto.request.NearbyPlaceSearchRequest;
 import personal_projects.backend.domain.place.dto.response.NearbyPlaceResponse;
 import personal_projects.backend.domain.place.entity.PlaceCategory;
@@ -15,15 +16,9 @@ public class PlaceJdbcRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public List<NearbyPlaceResponse> findNearby(NearbyPlaceSearchRequest request) {
-        double latitudeDistance = request.radiusKilometers() / 111.32;
-        double longitudeDistance = request.radiusKilometers()
-            / (111.32 * Math.cos(Math.toRadians(request.latitude())));
-        String polygon = createPolygon(
-            request.longitude(),
-            request.latitude(),
-            longitudeDistance,
-            latitudeDistance
-        );
+        String polygon = GeoBoundingBox.aroundKilometers(
+            request.longitude(), request.latitude(), request.radiusKilometers()
+        ).toWktPolygon();
 
         String categoryCondition = request.category() == PlaceCategory.ALL
             ? ""
@@ -64,25 +59,5 @@ public class PlaceJdbcRepository {
             resultSet.getDouble("latitude"),
             resultSet.getDouble("distance_meters")
         ), parameters);
-    }
-
-    private String createPolygon(
-        double longitude,
-        double latitude,
-        double longitudeDistance,
-        double latitudeDistance
-    ) {
-        double longitudeMin = longitude - longitudeDistance;
-        double longitudeMax = longitude + longitudeDistance;
-        double latitudeMin = latitude - latitudeDistance;
-        double latitudeMax = latitude + latitudeDistance;
-
-        return "POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))".formatted(
-            longitudeMin, latitudeMin,
-            longitudeMin, latitudeMax,
-            longitudeMax, latitudeMax,
-            longitudeMax, latitudeMin,
-            longitudeMin, latitudeMin
-        );
     }
 }
