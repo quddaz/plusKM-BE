@@ -27,7 +27,8 @@ public class EmergencyImporter {
     @Transactional
     public void importAll() {
         List<EmergencyFacilityData> facilities = apiClient.fetchFacilities();
-        List<Emergency> existingEmergencies = repository.findAllActive();
+        // 비활성 응급실도 포함해야 재등장 시 기존 ID로 다시 활성화할 수 있다.
+        List<Emergency> existingEmergencies = repository.findAll();
 
         deactivateMissingEmergencies(existingEmergencies, extractHpids(facilities));
         List<Emergency> importedEmergencies = mapEmergencies(facilities, existingEmergencies);

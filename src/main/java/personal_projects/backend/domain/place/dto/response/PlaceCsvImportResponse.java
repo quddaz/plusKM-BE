@@ -4,6 +4,6 @@ public record PlaceCsvImportResponse(
     int hospitals,
     int pharmacies,
     int skipped,
-    int deletedInactive
+    int inactivePlaces
 ) {
 }

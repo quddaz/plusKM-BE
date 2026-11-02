@@ -54,6 +54,15 @@ public class EmergencyController {
         );
     }
 
+    @PostMapping("/search/circle-within-sorted")
+    @ResponseStatus(HttpStatus.OK)
+    public NearbyEmergenciesResponse findNearbyEmergenciesCircleWithinSorted(
+        @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
+        return NearbyEmergenciesResponse.from(
+            emergencyService.findNearbyEmergenciesCircleWithinSorted(searchEmergencyRequest)
+        );
+    }
+
     @PostMapping("/beds")
     @ResponseStatus(HttpStatus.OK)
     public EmergencyBedsResponse findBeds(@Valid @RequestBody EmergencyBedSearchRequest request) {

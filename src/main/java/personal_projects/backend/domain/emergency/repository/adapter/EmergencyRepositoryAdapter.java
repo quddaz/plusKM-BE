@@ -35,6 +35,11 @@ public class EmergencyRepositoryAdapter implements EmergencyRepository {
     }
 
     @Override
+    public List<Emergency> findAll() {
+        return jpaRepository.findAll();
+    }
+
+    @Override
     public void saveAll(List<Emergency> emergencies) {
         jpaRepository.saveAll(emergencies);
     }
@@ -85,6 +90,19 @@ public class EmergencyRepositoryAdapter implements EmergencyRepository {
         double radiusKilometers
     ) {
         return jdbcRepository.findNearbyEmergenciesCircleWithin(
+            longitude,
+            latitude,
+            radiusKilometers
+        );
+    }
+
+    @Override
+    public List<NearbyEmergencyResponse> findNearbyEmergenciesCircleWithinSorted(
+        double longitude,
+        double latitude,
+        double radiusKilometers
+    ) {
+        return jdbcRepository.findNearbyEmergenciesCircleWithinSorted(
             longitude,
             latitude,
             radiusKilometers

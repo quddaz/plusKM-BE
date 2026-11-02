@@ -15,6 +15,8 @@ public interface EmergencyRepository {
 
     List<Emergency> findAllActive();
 
+    List<Emergency> findAll();
+
     void saveAll(List<Emergency> emergencies);
 
     List<NearbyEmergencyResponse> findNearbyEmergencies(
@@ -36,6 +38,12 @@ public interface EmergencyRepository {
     );
 
     List<NearbyEmergencyResponse> findNearbyEmergenciesCircleWithin(
+        double longitude,
+        double latitude,
+        double radiusKilometers
+    );
+
+    List<NearbyEmergencyResponse> findNearbyEmergenciesCircleWithinSorted(
         double longitude,
         double latitude,
         double radiusKilometers

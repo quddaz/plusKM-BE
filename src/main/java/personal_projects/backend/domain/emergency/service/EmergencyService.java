@@ -61,6 +61,14 @@ public class EmergencyService {
         );
     }
 
+    public List<NearbyEmergencyResponse> findNearbyEmergenciesCircleWithinSorted(NearbyEmergencySearchRequest request) {
+        return emergencyRepository.findNearbyEmergenciesCircleWithinSorted(
+            request.longitude(),
+            request.latitude(),
+            request.radiusKilometers()
+        );
+    }
+
     public EmergencyDetailResponse findEmergencyDetail(Long emergencyId) {
         return emergencyRepository.findEmergencyDetail(emergencyId);
     }

@@ -1,6 +1,7 @@
 package personal_projects.backend.domain.place.repository;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -28,5 +29,6 @@ class PlaceJdbcRepositoryTest {
         verify(jdbcTemplate).query(sql.capture(),
             ArgumentMatchers.<RowMapper<NearbyPlaceResponse>>any(), any(Object[].class));
         assertFalse(sql.getValue().toUpperCase().contains("LIMIT"));
+        assertTrue(sql.getValue().contains("active = true"));
     }
 }
