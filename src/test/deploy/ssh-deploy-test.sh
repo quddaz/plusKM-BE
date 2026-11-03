@@ -11,7 +11,7 @@ cat > "$test_dir/bin/ssh" <<'SSH'
 printf 'ssh %s\n' "$*" >> "$DEPLOY_TEST_LOG"
 case "${*: -1}" in
     'mktemp -d /tmp/pluskm-upload.XXXXXXXX') echo '/tmp/pluskm-upload.TEST1234' ;;
-    'sudo -n bash -s -- '*) cat >/dev/null; exit "${DEPLOY_TEST_REMOTE_EXIT:-0}" ;;
+    'sudo -n /usr/local/sbin/pluskm-deploy '*) exit "${DEPLOY_TEST_REMOTE_EXIT:-0}" ;;
 esac
 SSH
 cat > "$test_dir/bin/scp" <<'SCP'
@@ -34,7 +34,7 @@ grep -q 'StrictHostKeyChecking=yes' "$DEPLOY_TEST_LOG"
 grep -q "ControlPath=$SSH_CONTROL_PATH" "$DEPLOY_TEST_LOG"
 grep -q 'ec2-user@server.test.invalid' "$DEPLOY_TEST_LOG"
 grep -q -- '-P 2222' "$DEPLOY_TEST_LOG"
-grep -Eq 'sudo -n bash -s -- /tmp/pluskm-upload.TEST1234/backend.jar [a-f0-9]{64}' "$DEPLOY_TEST_LOG"
+grep -Eq 'sudo -n /usr/local/sbin/pluskm-deploy /tmp/pluskm-upload.TEST1234/backend.jar [a-f0-9]{64}' "$DEPLOY_TEST_LOG"
 grep -q 'rmdir -- /tmp/pluskm-upload.TEST1234' "$DEPLOY_TEST_LOG"
 
 if SSH_HOST='server;unexpected' bash "$project_dir/scripts/deploy-ssh.sh" "$test_dir/backend.jar" 2>/dev/null; then

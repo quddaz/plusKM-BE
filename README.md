@@ -82,7 +82,7 @@ SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
 
 ## SSH 배포
 
-GitHub Actions의 `Deploy backend over SSH`를 수동 실행하면 전체 테스트를 통과한 JAR을 SCP로 전송하고 SSH로 서비스를 재시작합니다. SHA-256 검증과 내부 상태 확인을 수행하며, 상태 확인에 실패하면 이전 JAR로 복원합니다. 필요한 서버 설정과 GitHub Secrets는 [SSH 배포 문서](docs/DEPLOY-SSH.md)를 참고하세요.
+`main`에 푸시하면 GitHub Actions의 `Deploy backend over SSH`가 전체 테스트를 실행하고, 통과한 JAR을 SCP로 전송해 SSH로 서비스를 재시작합니다. 수동 실행도 main에서만 배포합니다. SHA-256 검증과 내부 상태 확인을 수행하며, 상태 확인에 실패하면 이전 JAR로 복원합니다. 필요한 서버 설정과 GitHub Secrets는 [SSH 배포 문서](docs/DEPLOY-SSH.md)를 참고하세요.
 
 ## 실험과 설계 기록
 

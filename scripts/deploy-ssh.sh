@@ -47,4 +47,4 @@ remote_dir=$(ssh "${options[@]}" -p "$ssh_port" "$target" 'mktemp -d /tmp/pluskm
 }
 scp "${options[@]}" -P "$ssh_port" "$artifact" "$target:$remote_dir/backend.jar"
 ssh "${options[@]}" -p "$ssh_port" "$target" \
-    "sudo -n bash -s -- $remote_dir/backend.jar $checksum" < "$project_dir/scripts/deploy-remote.sh"
+    "sudo -n /usr/local/sbin/pluskm-deploy $remote_dir/backend.jar $checksum"
