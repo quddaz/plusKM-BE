@@ -12,15 +12,20 @@ import personal_projects.backend.domain.place.entity.PlaceCategory;
 class NearbyPlaceSearchRequestTest {
 
     @Test
-    void 병원과_약국의_검색_반경은_최대_3km이다() {
+    void 병원과_약국의_검색_반경은_300m부터_10km까지_선택할_수_있다() {
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             Validator validator = factory.getValidator();
 
+            assertTrue(validator.validate(request(0.3)).isEmpty());
+            assertTrue(validator.validate(request(0.5)).isEmpty());
             assertTrue(validator.validate(request(1.0)).isEmpty());
             assertTrue(validator.validate(request(3.0)).isEmpty());
+            assertTrue(validator.validate(request(5.0)).isEmpty());
+            assertTrue(validator.validate(request(10.0)).isEmpty());
+            assertFalse(validator.validate(request(0.2)).isEmpty());
             assertFalse(validator.validate(request(2.0)).isEmpty());
             assertFalse(validator.validate(request(3.001)).isEmpty());
-            assertFalse(validator.validate(request(10.0)).isEmpty());
+            assertFalse(validator.validate(request(10.001)).isEmpty());
         }
     }
 

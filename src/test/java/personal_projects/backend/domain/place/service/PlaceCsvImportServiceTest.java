@@ -11,6 +11,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
 import personal_projects.backend.domain.place.config.PlaceCsvProperties;
 import personal_projects.backend.domain.place.dto.response.PlaceCsvImportResponse;
@@ -54,6 +56,25 @@ class PlaceCsvImportServiceTest {
         PlaceCsvImportService service = new PlaceCsvImportService(repository, new PlaceCsvReader(), PROPERTIES);
 
         assertThrows(IllegalStateException.class, service::importAll);
+        verify(repository, never()).updateChangedFromStage();
+        verify(repository, never()).insertNewFromStage();
+        verify(repository, never()).deactivateMissingFromStage();
+        verify(repository).dropStageTable();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void 병원이나_약국의_유효_행이_없으면_병합하지_않는다(boolean emptyHospital) {
+        PlaceCsvStageRepository repository = mock(PlaceCsvStageRepository.class);
+        when(repository.countStaged()).thenReturn(1);
+        when(repository.countActivePlaces()).thenReturn(1);
+        PlaceCsvProperties properties = new PlaceCsvProperties(
+            emptyHospital ? "fixtures/places/empty.csv" : PROPERTIES.hospitalPath(),
+            emptyHospital ? PROPERTIES.pharmacyPath() : "fixtures/places/empty.csv", 2, false);
+        PlaceCsvImportService service = new PlaceCsvImportService(repository, new PlaceCsvReader(), properties);
+
+        assertThrows(IllegalStateException.class, service::importAll);
+
         verify(repository, never()).updateChangedFromStage();
         verify(repository, never()).insertNewFromStage();
         verify(repository, never()).deactivateMissingFromStage();

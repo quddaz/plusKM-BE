@@ -8,12 +8,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import personal_projects.backend.support.MySqlIntegrationTest;
 
-class GeoBoundingBoxMySqlTest {
+@Tag("repository")
+class GeoBoundingBoxMySqlTest extends MySqlIntegrationTest {
 
     private static final double[][] CENTERS = {
         {127.1112, 37.3948}, {126.9780, 37.5665}, {129.0756, 35.1796}, {126.5312, 33.4996}
@@ -23,14 +24,6 @@ class GeoBoundingBoxMySqlTest {
 
     @Test
     void 사각형_후보와_구면_거리_결과가_전체_구면_거리_결과와_같다() {
-        String port = System.getenv("PLUSKM_BENCH_DB_PORT");
-        String password = System.getenv("PLUSKM_BENCH_DB_PASSWORD");
-        Assumptions.assumeTrue(port != null && password != null, "로컬 MySQL이 있을 때만 실행");
-        JdbcTemplate jdbc = new JdbcTemplate(new DriverManagerDataSource(
-            "jdbc:mysql://127.0.0.1:" + port + "/pluskm_benchmark?rewriteBatchedStatements=true",
-            "root", password
-        ));
-
         jdbc.execute("DROP TABLE IF EXISTS geo_bbox_check");
         jdbc.execute("""
             CREATE TABLE geo_bbox_check (

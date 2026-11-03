@@ -1,5 +1,6 @@
 package personal_projects.backend.domain.place.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,37 +17,39 @@ public class PlaceJdbcRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public List<NearbyPlaceResponse> findNearby(NearbyPlaceSearchRequest request) {
-        String polygon = GeoBoundingBox.aroundKilometers(
+        GeoBoundingBox bounds = GeoBoundingBox.aroundKilometers(
             request.longitude(), request.latitude(), request.radiusKilometers()
-        ).toWktPolygon();
+        );
 
         String categoryCondition = request.category() == PlaceCategory.ALL
             ? ""
             : " AND category = ?";
         String sql = """
             SELECT id, name, category, facility_type, address, tel,
-                   ST_X(coordinate) AS longitude,
-                   ST_Y(coordinate) AS latitude,
-                   ST_Distance_Sphere(
-                       coordinate,
-                       ST_SRID(POINT(?, ?), 4326)
-                   ) AS distance_meters
+                   longitude, latitude,
+                   2 * 6370986 * ASIN(LEAST(1, SQRT(
+                       POWER(SIN(RADIANS(latitude - ?) / 2), 2)
+                       + COS(RADIANS(?)) * COS(RADIANS(latitude))
+                       * POWER(SIN(RADIANS(longitude - ?) / 2), 2)
+                   ))) AS distance_meters
             FROM place
             WHERE active = true
-              AND MBRContains(
-                    ST_GeomFromText(?, 4326, 'axis-order=long-lat'),
-                    coordinate
-                  )
+              AND latitude BETWEEN ? AND ?
+              AND longitude BETWEEN ? AND ?
             """ + categoryCondition + """
             HAVING distance_meters <= ?
-            ORDER BY distance_meters
+            ORDER BY distance_meters, id
             """;
 
-        Object[] parameters = request.category() == PlaceCategory.ALL
-            ? new Object[]{request.longitude(), request.latitude(), polygon,
-                request.radiusKilometers() * 1_000}
-            : new Object[]{request.longitude(), request.latitude(), polygon,
-                request.category().name(), request.radiusKilometers() * 1_000};
+        List<Object> parameters = new ArrayList<>(List.of(
+            request.latitude(), request.latitude(), request.longitude(),
+            bounds.minLatitude(), bounds.maxLatitude(),
+            bounds.minLongitude(), bounds.maxLongitude()
+        ));
+        if (request.category() != PlaceCategory.ALL) {
+            parameters.add(request.category().name());
+        }
+        parameters.add(request.radiusKilometers() * 1_000);
 
         return jdbcTemplate.query(sql, (resultSet, rowNumber) -> new NearbyPlaceResponse(
             resultSet.getLong("id"),
@@ -58,6 +61,6 @@ public class PlaceJdbcRepository {
             resultSet.getDouble("longitude"),
             resultSet.getDouble("latitude"),
             resultSet.getDouble("distance_meters")
-        ), parameters);
+        ), parameters.toArray());
     }
 }

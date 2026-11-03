@@ -25,7 +25,7 @@ public class EmergencyJdbcRepository {
 
         String sql = """
             SELECT id, hpid, name, address, tel AS phone_number,
-                   ST_X(coordinate) AS longitude, ST_Y(coordinate) AS latitude
+                   ST_Longitude(coordinate) AS longitude, ST_Latitude(coordinate) AS latitude
             FROM emergency
             WHERE active = true
               AND ST_Within(coordinate, ST_GeomFromText(?, 4326, 'axis-order=long-lat'))
@@ -53,7 +53,7 @@ public class EmergencyJdbcRepository {
 
         String sql = """
             SELECT id, hpid, name, address, tel AS phone_number,
-                   ST_X(coordinate) AS longitude, ST_Y(coordinate) AS latitude,
+                   ST_Longitude(coordinate) AS longitude, ST_Latitude(coordinate) AS latitude,
                    ST_Distance_Sphere(
                        coordinate,
                        ST_SRID(POINT(?, ?), 4326)
@@ -65,7 +65,7 @@ public class EmergencyJdbcRepository {
                     coordinate
                   )
             HAVING distance_meters <= ?
-            ORDER BY distance_meters
+            ORDER BY distance_meters, id
             """;
 
         return jdbcTemplate.query(sql, (resultSet, rowNumber) ->
@@ -89,7 +89,7 @@ public class EmergencyJdbcRepository {
 
         String sql = """
             SELECT id, hpid, name, address, tel AS phone_number,
-                   ST_X(coordinate) AS longitude, ST_Y(coordinate) AS latitude
+                   ST_Longitude(coordinate) AS longitude, ST_Latitude(coordinate) AS latitude
             FROM emergency FORCE INDEX (idx_emergency_coordinate)
             WHERE active = true
               AND MBRContains(
@@ -122,7 +122,7 @@ public class EmergencyJdbcRepository {
     ) {
         String sql = """
             SELECT id, hpid, name, address, tel AS phone_number,
-                   ST_X(coordinate) AS longitude, ST_Y(coordinate) AS latitude
+                   ST_Longitude(coordinate) AS longitude, ST_Latitude(coordinate) AS latitude
             FROM emergency
             WHERE active = true
               AND ST_Within(
@@ -151,7 +151,7 @@ public class EmergencyJdbcRepository {
     ) {
         String sql = """
             SELECT id, hpid, name, address, tel AS phone_number,
-                   ST_X(coordinate) AS longitude, ST_Y(coordinate) AS latitude,
+                   ST_Longitude(coordinate) AS longitude, ST_Latitude(coordinate) AS latitude,
                    ST_Distance_Sphere(
                        coordinate,
                        ST_SRID(POINT(?, ?), 4326)
@@ -162,7 +162,7 @@ public class EmergencyJdbcRepository {
                     coordinate,
                     ST_Buffer(ST_SRID(POINT(?, ?), 4326), ?)
                   )
-            ORDER BY distance_meters
+            ORDER BY distance_meters, id
             """;
 
         return jdbcTemplate.query(sql, (resultSet, rowNumber) ->

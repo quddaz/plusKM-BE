@@ -23,14 +23,14 @@ public class EmergencyController {
     @PostMapping("/search")
     @ResponseStatus(HttpStatus.OK)
     public NearbyEmergenciesResponse findNearbyEmergencies(
-        @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
+        @Valid @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
         return NearbyEmergenciesResponse.from(emergencyService.findNearbyEmergencies(searchEmergencyRequest));
     }
 
     @PostMapping("/search/optimized")
     @ResponseStatus(HttpStatus.OK)
     public NearbyEmergenciesResponse findNearbyEmergenciesOptimized(
-        @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
+        @Valid @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
         return NearbyEmergenciesResponse.from(
             emergencyService.findNearbyEmergenciesOptimized(searchEmergencyRequest)
         );
@@ -39,7 +39,7 @@ public class EmergencyController {
     @PostMapping("/search/indexed-bounds")
     @ResponseStatus(HttpStatus.OK)
     public NearbyEmergenciesResponse findNearbyEmergenciesIndexedBounds(
-        @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
+        @Valid @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
         return NearbyEmergenciesResponse.from(
             emergencyService.findNearbyEmergenciesIndexedBounds(searchEmergencyRequest)
         );
@@ -48,7 +48,7 @@ public class EmergencyController {
     @PostMapping("/search/circle-within")
     @ResponseStatus(HttpStatus.OK)
     public NearbyEmergenciesResponse findNearbyEmergenciesCircleWithin(
-        @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
+        @Valid @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
         return NearbyEmergenciesResponse.from(
             emergencyService.findNearbyEmergenciesCircleWithin(searchEmergencyRequest)
         );
@@ -57,7 +57,7 @@ public class EmergencyController {
     @PostMapping("/search/circle-within-sorted")
     @ResponseStatus(HttpStatus.OK)
     public NearbyEmergenciesResponse findNearbyEmergenciesCircleWithinSorted(
-        @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
+        @Valid @RequestBody NearbyEmergencySearchRequest searchEmergencyRequest) {
         return NearbyEmergenciesResponse.from(
             emergencyService.findNearbyEmergenciesCircleWithinSorted(searchEmergencyRequest)
         );

@@ -27,6 +27,9 @@ public class EmergencyImporter {
     @Transactional
     public void importAll() {
         List<EmergencyFacilityData> facilities = apiClient.fetchFacilities();
+        if (facilities.isEmpty()) {
+            throw new IllegalStateException("응급실 API가 빈 목록을 반환했습니다.");
+        }
         // 비활성 응급실도 포함해야 재등장 시 기존 ID로 다시 활성화할 수 있다.
         List<Emergency> existingEmergencies = repository.findAll();
 

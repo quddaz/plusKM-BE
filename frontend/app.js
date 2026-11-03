@@ -1,17 +1,21 @@
-const DEFAULT_LOCATION = { latitude: 37.5665, longitude: 126.9780 };
+const DEFAULT_LOCATION = { latitude: 37.4003268, longitude: 127.1048549 };
 const state = { location: DEFAULT_LOCATION, radiusKilometers: 10,
-  radiusByMode: { EMERGENCY: 10, MEDICAL: 3 }, searchMode: "EMERGENCY", hospitals: [], map: null,
-  mapProvider: null, markers: [], userMarker: null, route: null, selectedHospital: null };
+  radiusByMode: { EMERGENCY: 10, MEDICAL: 1 }, searchMode: "EMERGENCY", hospitals: [], map: null,
+  mapProvider: null, markers: [], userMarker: null, radiusOverlay: null, route: null, selectedHospital: null,
+  usingDefaultLocation: true, visibleHospitals: [], sameLocationPlaces: [] };
 const list = document.querySelector("#hospitalList");
 const dataState = document.querySelector("#dataState");
 const locationLabel = document.querySelector("#locationLabel");
 const resultCount = document.querySelector("#resultCount");
+const resultCountSuffix = document.querySelector("#resultCountSuffix");
 const resultType = document.querySelector("#resultType");
 const resultNotice = document.querySelector("#resultNotice");
 const mapLegend = document.querySelector(".map-legend");
 const emergencyCall = document.querySelector("#emergencyCall");
 const radiusSelect = document.querySelector("#radiusSelect");
-const RADIUS_OPTIONS_BY_MODE = { EMERGENCY: [1, 5, 10, 20, 30], MEDICAL: [1, 3] };
+const RADIUS_OPTIONS_BY_MODE = { EMERGENCY: [1, 5, 10, 20, 30], MEDICAL: [1, 3, 5, 10] };
+const MEDICAL_CLUSTER_REVEAL_ZOOM = 16;
+const MAP_RADIUS_VIEW_MARGIN = 1.03;
 const NAVER_MAP_CLIENT_ID = "cjtt3s316g";
 const MAP_LOAD_DELAYS = [0, 1500, 4000];
 const API_BASE_URL = (
@@ -137,12 +141,25 @@ async function loadPlaces() {
 }
 
 function loadNearby() {
+  closeSameLocationModal();
   closeHospitalDetail();
   return state.searchMode === "EMERGENCY" ? loadHospitals() : loadPlaces();
 }
 
 function modeLabel() {
   return { EMERGENCY: "응급실", MEDICAL: "병원·약국" }[state.searchMode];
+}
+
+function radiusLabel() {
+  return state.radiusKilometers < 1
+    ? `${Math.round(state.radiusKilometers * 1000)}m`
+    : `${state.radiusKilometers}km`;
+}
+
+function distanceLabel(distanceKilometers) {
+  return distanceKilometers < 1
+    ? `${Math.round(distanceKilometers * 1000)}m`
+    : `${distanceKilometers.toFixed(1)}km`;
 }
 
 async function refreshBeds() {
@@ -172,24 +189,27 @@ async function refreshBeds() {
 }
 
 function render() {
+  resultType.textContent = modeLabel();
+  mapLegend.hidden = state.searchMode !== "EMERGENCY";
+  emergencyCall.hidden = state.searchMode !== "EMERGENCY";
   const hospitals = state.hospitals.map(hospital => ({
     ...hospital, distance: distanceInKilometers(state.location, hospital)
   })).filter(hospital => hospital.distance <= state.radiusKilometers)
     .sort((first, second) => first.distance - second.distance);
   resultCount.textContent = hospitals.length;
-  resultType.textContent = modeLabel();
+  resultCount.hidden = false;
+  resultCountSuffix.hidden = false;
   resultNotice.textContent = state.searchMode === "EMERGENCY"
     ? "병상 정보는 방문 전 전화로 확인해 주세요."
     : "운영 여부와 진료·조제 시간은 방문 전 전화로 확인해 주세요.";
-  mapLegend.hidden = state.searchMode !== "EMERGENCY";
-  emergencyCall.hidden = state.searchMode !== "EMERGENCY";
   list.innerHTML = hospitals.length ? hospitals.map(card).join("")
     : `<p class="empty">반경 안의 ${modeLabel()} 정보를 확인할 수 없습니다.</p>`;
+  state.visibleHospitals = hospitals;
   renderMarkers(hospitals);
 }
 
 function card(hospital) {
-  return `<article class="card" data-hospital-id="${hospital.id}"><div class="card-head"><h3>${escapeHtml(hospital.name)}</h3><span class="distance">${hospital.distance.toFixed(1)}km</span>${favoriteButton(hospital)}</div><p class="address">${escapeHtml(hospital.address)}</p><div class="actions"><a class="call" href="tel:${hospital.phoneNumber}">전화하기</a><button class="route" data-route-id="${hospital.id}">경로 보기</button></div></article>`;
+  return `<article class="card" data-hospital-id="${hospital.id}"><div class="card-head"><h3>${escapeHtml(hospital.name)}</h3><span class="distance">${distanceLabel(hospital.distance)}</span>${favoriteButton(hospital)}</div><p class="address">${escapeHtml(hospital.address)}</p><div class="actions"><a class="call" href="tel:${hospital.phoneNumber}">전화하기</a><button class="route" data-route-id="${hospital.id}">경로 보기</button></div></article>`;
 }
 
 function favoriteType(item) { return item.hpid ? "EMERGENCY" : "PLACE"; }
@@ -225,10 +245,12 @@ function initializeMap() {
 function initializeNaverMap() {
   const center = new naver.maps.LatLng(state.location.latitude, state.location.longitude);
   state.mapProvider = "naver";
-  state.map = new naver.maps.Map("map", { center, zoom: 13, zoomControl: false });
-  state.userMarker = new naver.maps.Marker({ position: center, map: state.map, title: "현재 위치", zIndex: 1000,
+  state.map = new naver.maps.Map("map", { center, zoom: 13, zoomControl: false,
+    mapTypeId: naver.maps.MapTypeId.NORMAL });
+  state.userMarker = new naver.maps.Marker({ position: center, map: state.map, title: "검색 기준 위치", zIndex: 1000,
     icon: { content: '<div class="current-marker"><span></span></div>', anchor: new naver.maps.Point(13, 13) } });
   naver.maps.Event.addListener(state.map, "click", event => selectLocation(event.coord));
+  naver.maps.Event.addListener(state.map, "zoom_changed", () => renderMarkers());
   hideMapFallback();
   fitMapToRadius();
   setTimeout(() => naver.maps.Event.trigger(state.map, "resize"), 100);
@@ -241,12 +263,16 @@ function initializeFallbackMap() {
   }
   const center = [state.location.latitude, state.location.longitude];
   state.mapProvider = "leaflet";
-  state.map = L.map("map", { zoomControl: false }).setView(center, 13);
+  state.map = L.map("map", { zoomControl: false, zoomSnap: 0.01 }).setView(center, 13);
   state.map.createPane("currentLocationPane").style.zIndex = "625";
   L.tileLayer("/api/map-tile?z={z}&x={x}&y={y}", { maxZoom: 19, attribution: "&copy; OpenStreetMap" }).addTo(state.map);
   state.userMarker = L.circleMarker(center, { radius: 9, color: "#fff", weight: 3,
-    fillColor: "#1769ff", fillOpacity: 1, pane: "currentLocationPane" }).addTo(state.map).bindTooltip("현재 위치");
-  state.map.on("click", event => selectLocation(event.latlng));
+    fillColor: "#1769ff", fillOpacity: 1, pane: "currentLocationPane" }).addTo(state.map).bindTooltip("검색 기준 위치");
+  state.map.on("click", event => {
+    if (event.originalEvent?.target?.closest?.(".leaflet-marker-icon")) return;
+    selectLocation(event.latlng);
+  });
+  state.map.on("zoomend", () => renderMarkers());
   hideMapFallback();
   fitMapToRadius();
 }
@@ -254,22 +280,46 @@ function initializeFallbackMap() {
 function updateMapCenter() {
   if (state.mapProvider === "naver") {
     const center = new naver.maps.LatLng(state.location.latitude, state.location.longitude);
-    state.map.setCenter(center); state.userMarker.setPosition(center); fitMapToRadius(); return;
+    state.map.setCenter(center); state.userMarker.setPosition(center);
+    fitMapToRadius(); return;
   }
   const center = [state.location.latitude, state.location.longitude];
-  state.map.setView(center, 13); state.userMarker.setLatLng(center); fitMapToRadius();
+  state.map.setView(center, 13); state.userMarker.setLatLng(center);
+  fitMapToRadius();
 }
 
 function fitMapToRadius() {
-  if (!state.map || state.route || document.querySelector(".screen").classList.contains("routing")) return;
+  if (!state.map) return;
+  updateSearchRadiusOverlay();
+  if (state.route || document.querySelector(".screen").classList.contains("routing")) return;
   const radius = state.radiusKilometers;
+  const mapRect = document.querySelector("#map").getBoundingClientRect();
+  const controlsBottom = document.querySelector(".map-controls").getBoundingClientRect().bottom;
+  const topObstruction = state.searchMode === "EMERGENCY"
+    ? Math.max(controlsBottom + 35, mapLegend.getBoundingClientRect().bottom)
+    : controlsBottom;
+  const topPadding = Math.ceil(topObstruction - mapRect.top + 10);
+  const bottomPadding = Math.ceil(mapRect.bottom - document.querySelector("#bottomSheet").getBoundingClientRect().top + 10);
+  const sidePadding = 18;
   if (state.mapProvider === "leaflet") {
-    const bounds = L.latLng(state.location.latitude, state.location.longitude).toBounds(radius * 2000);
-    state.map.fitBounds(bounds, { paddingTopLeft: [24, 145], paddingBottomRight: [24, 145] });
+    const bounds = state.radiusOverlay.getBounds();
+    const northWest = state.map.project(bounds.getNorthWest(), 0);
+    const southEast = state.map.project(bounds.getSouthEast(), 0);
+    const availableWidth = Math.max(80, mapRect.width - sidePadding * 2);
+    const availableHeight = Math.max(80, mapRect.height - topPadding - bottomPadding);
+    const zoom = Math.log2(Math.min(
+      availableWidth / (southEast.x - northWest.x),
+      availableHeight / (southEast.y - northWest.y)
+    ) / MAP_RADIUS_VIEW_MARGIN);
+    const visibleCenter = L.point(sidePadding + availableWidth / 2, topPadding + availableHeight / 2);
+    const mapCenter = L.point(mapRect.width / 2, mapRect.height / 2);
+    const projectedCenter = state.map.project([state.location.latitude, state.location.longitude], zoom);
+    state.map.setView(state.map.unproject(projectedCenter.subtract(visibleCenter.subtract(mapCenter)), zoom),
+      zoom, { animate: false });
     return;
   }
-  const latitudeDelta = radius / 111;
-  const longitudeDelta = radius / (111 * Math.max(Math.cos(state.location.latitude * Math.PI / 180), 0.2));
+  const latitudeDelta = radius * MAP_RADIUS_VIEW_MARGIN / 111;
+  const longitudeDelta = radius * MAP_RADIUS_VIEW_MARGIN / (111 * Math.max(Math.cos(state.location.latitude * Math.PI / 180), 0.2));
   const southWest = new naver.maps.LatLng(
     state.location.latitude - latitudeDelta,
     state.location.longitude - longitudeDelta
@@ -278,19 +328,47 @@ function fitMapToRadius() {
     state.location.latitude + latitudeDelta,
     state.location.longitude + longitudeDelta
   );
-  state.map.fitBounds(new naver.maps.LatLngBounds(southWest, northEast), { top: 145, right: 24, bottom: 145, left: 24 });
+  state.map.fitBounds(new naver.maps.LatLngBounds(southWest, northEast),
+    { top: topPadding, right: sidePadding, bottom: bottomPadding, left: sidePadding });
+}
+
+function updateSearchRadiusOverlay() {
+  const radiusMeters = state.radiusKilometers * 1000;
+  if (state.mapProvider === "leaflet") {
+    const center = [state.location.latitude, state.location.longitude];
+    if (!state.radiusOverlay) {
+      state.radiusOverlay = L.circle(center, { radius: radiusMeters, color: "#1769ff", weight: 2,
+        opacity: 0.8, fillColor: "#1769ff", fillOpacity: 0.06, interactive: false }).addTo(state.map);
+    } else {
+      state.radiusOverlay.setLatLng(center).setRadius(radiusMeters);
+    }
+    return;
+  }
+  const center = new naver.maps.LatLng(state.location.latitude, state.location.longitude);
+  if (!state.radiusOverlay) {
+    state.radiusOverlay = new naver.maps.Circle({ map: state.map, center, radius: radiusMeters,
+      strokeColor: "#1769ff", strokeWeight: 2, strokeOpacity: 0.8,
+      fillColor: "#1769ff", fillOpacity: 0.06, clickable: false, zIndex: 1 });
+  } else {
+    state.radiusOverlay.setCenter(center);
+    state.radiusOverlay.setRadius(radiusMeters);
+  }
 }
 
 function hideMapFallback() { document.querySelector("#mapFallback").style.display = "none"; }
 
 function selectLocation(coordinate) {
   state.location = coordinateValue(coordinate);
-  if (state.mapProvider === "naver") state.userMarker.setPosition(coordinate);
-  else state.userMarker.setLatLng(coordinate);
+  state.usingDefaultLocation = false;
+  if (state.mapProvider === "naver") {
+    state.userMarker.setPosition(coordinate);
+  } else {
+    state.userMarker.setLatLng(coordinate);
+  }
   if (document.querySelector(".screen").classList.contains("routing")) stopRouteGuide();
   else clearRoute();
   fitMapToRadius();
-  locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
+  locationLabel.textContent = `선택한 위치 기준 ${radiusLabel()}`;
   updateLocationName();
   loadNearby();
 }
@@ -305,33 +383,128 @@ async function updateLocationName() {
     const query = new URLSearchParams({ longitude: state.location.longitude, latitude: state.location.latitude });
     const response = await fetch(`/api/reverse-geocode?${query}`);
     if (!response.ok) throw new Error("지역 조회 실패");
-    locationLabel.textContent = `${(await response.json()).region} · ${state.radiusKilometers}km`;
+    locationLabel.textContent = `${(await response.json()).region} · ${radiusLabel()}`;
   } catch (error) {
-    locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
+    locationLabel.textContent = `선택한 위치 기준 ${radiusLabel()}`;
   }
 }
 
-function renderMarkers(hospitals) {
+function renderMarkers(hospitals = state.visibleHospitals) {
   if (!state.map) return;
   state.markers.forEach(marker => state.mapProvider === "naver" ? marker.setMap(null) : marker.remove());
+  const clusters = markerClusters(hospitals);
   if (state.mapProvider === "naver") {
-    state.markers = hospitals.map(hospital => {
-      const markerStatus = needsVerification(hospital) ? " needs-verification" : "";
-      const markerMode = markerModeClass(hospital);
-      const marker = new naver.maps.Marker({ position: new naver.maps.LatLng(hospital.latitude, hospital.longitude), map: state.map,
-        title: hospital.name, icon: { content: `<div class="hospital-marker ${markerMode}${markerStatus}"><b>${markerText(hospital)}</b></div>`, anchor: new naver.maps.Point(19, 42) } });
-      naver.maps.Event.addListener(marker, "click", () => selectHospital(hospital));
+    state.markers = clusters.map(cluster => {
+      const place = cluster.places[0];
+      const marker = new naver.maps.Marker({ position: new naver.maps.LatLng(cluster.latitude, cluster.longitude), map: state.map,
+        title: cluster.places.length === 1 ? place.name : clusterTooltip(cluster),
+        icon: { content: markerContent(cluster, place), anchor: state.searchMode === "MEDICAL" ? new naver.maps.Point(13, 31) : new naver.maps.Point(19, 42) } });
+      naver.maps.Event.addListener(marker, "click", () => cluster.places.length === 1 ? selectHospital(place) : openCluster(cluster));
       return marker;
     });
     return;
   }
-  state.markers = hospitals.map(hospital => {
-    const markerStatus = needsVerification(hospital) ? " needs-verification" : "";
-    const icon = L.divIcon({ className: "marker-shell", html: `<div class="hospital-marker ${markerModeClass(hospital)}${markerStatus}"><b>${markerText(hospital)}</b></div>`, iconSize: [38, 46], iconAnchor: [19, 43] });
-    return L.marker([hospital.latitude, hospital.longitude], { icon }).addTo(state.map)
-      .bindTooltip(hospital.name, { direction: "top", offset: [0, -36] })
-      .on("click", () => selectHospital(hospital));
+  state.markers = clusters.map(cluster => {
+    const place = cluster.places[0];
+    const icon = L.divIcon({ className: "marker-shell", html: markerContent(cluster, place), iconSize: state.searchMode === "MEDICAL" ? [26, 34] : [38, 46], iconAnchor: state.searchMode === "MEDICAL" ? [13, 31] : [19, 43] });
+    return L.marker([cluster.latitude, cluster.longitude], { icon, bubblingMouseEvents: false }).addTo(state.map)
+      .bindTooltip(cluster.places.length === 1 ? place.name : clusterTooltip(cluster), { direction: "top", offset: [0, -28] })
+      .on("click", event => {
+        if (event.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);
+        cluster.places.length === 1 ? selectHospital(place) : openCluster(cluster);
+      });
   });
+}
+
+function markerClusters(hospitals) {
+  if (state.searchMode === "EMERGENCY") return hospitals.map(place => ({ places: [place], latitude: place.latitude, longitude: place.longitude }));
+  const zoom = state.map.getZoom();
+  if (zoom >= MEDICAL_CLUSTER_REVEAL_ZOOM) {
+    const sameCoordinates = new Map();
+    hospitals.forEach(place => {
+      const key = `${place.latitude.toFixed(6)},${place.longitude.toFixed(6)}`;
+      if (!sameCoordinates.has(key)) sameCoordinates.set(key, { places: [], latitude: place.latitude, longitude: place.longitude, key });
+      sameCoordinates.get(key).places.push(place);
+    });
+    return [...sameCoordinates.values()];
+  }
+  const clusters = [];
+  hospitals.forEach(place => {
+    const point = markerPixel(place, zoom);
+    let cluster = clusters.find(item => Math.hypot(item.x - point.x, item.y - point.y) < 38);
+    if (!cluster) {
+      cluster = { places: [], x: point.x, y: point.y, latitude: place.latitude, longitude: place.longitude };
+      clusters.push(cluster);
+    }
+    const count = cluster.places.length;
+    cluster.x = (cluster.x * count + point.x) / (count + 1);
+    cluster.y = (cluster.y * count + point.y) / (count + 1);
+    cluster.latitude = (cluster.latitude * count + place.latitude) / (count + 1);
+    cluster.longitude = (cluster.longitude * count + place.longitude) / (count + 1);
+    cluster.places.push(place);
+  });
+  return clusters;
+}
+
+function markerPixel(place, zoom) {
+  const latitude = Math.max(-85, Math.min(85, place.latitude)) * Math.PI / 180;
+  const size = 256 * 2 ** zoom;
+  return { x: (place.longitude + 180) / 360 * size,
+    y: (1 - Math.log(Math.tan(latitude) + 1 / Math.cos(latitude)) / Math.PI) / 2 * size };
+}
+
+function markerContent(cluster, place) {
+  const multiple = cluster.places.length > 1;
+  const status = !multiple && needsVerification(place) ? " needs-verification" : "";
+  const mode = multiple ? "cluster" : markerModeClass(place);
+  return `<div class="hospital-marker ${mode}${status}"><b>${multiple ? cluster.places.length : markerText(place)}</b></div>`;
+}
+
+function clusterTooltip(cluster) {
+  return state.map.getZoom() >= MEDICAL_CLUSTER_REVEAL_ZOOM
+    ? `같은 위치 ${cluster.places.length}곳 · 눌러서 목록 보기`
+    : `${cluster.places.length}곳 · 눌러서 확대`;
+}
+
+function openCluster(cluster) {
+  if (state.map.getZoom() >= MEDICAL_CLUSTER_REVEAL_ZOOM) {
+    openSameLocationModal(cluster.places);
+    return;
+  }
+  const center = state.mapProvider === "naver"
+    ? new naver.maps.LatLng(cluster.latitude, cluster.longitude)
+    : [cluster.latitude, cluster.longitude];
+  const zoom = MEDICAL_CLUSTER_REVEAL_ZOOM;
+  if (state.mapProvider === "naver") {
+    state.map.setCenter(center);
+    state.map.setZoom(zoom);
+  } else {
+    state.map.setView(center, zoom);
+  }
+}
+
+function openSameLocationModal(places) {
+  closeHospitalDetail();
+  state.sameLocationPlaces = places;
+  document.querySelector("#sameLocationTitle").textContent = `이 위치의 병원·약국 ${places.length}곳`;
+  document.querySelector("#sameLocationAddress").textContent = places[0].address || "같은 위치에 등록된 기관을 선택해 주세요.";
+  document.querySelector("#sameLocationList").innerHTML = places.map((place, index) => `
+    <button class="same-location-item" type="button" data-same-location-index="${index}">
+      <span class="same-location-kind ${place.category === "PHARMACY" ? "pharmacy" : "hospital"}">${place.category === "PHARMACY" ? "약국" : "병원"}</span>
+      <span class="same-location-info"><strong>${escapeHtml(place.name)}</strong><small>${escapeHtml(place.facilityType || place.address || "기관 정보 보기")}</small></span>
+      <span class="same-location-arrow" aria-hidden="true">›</span>
+    </button>`).join("");
+  const modal = document.querySelector("#sameLocationModal");
+  modal.classList.add("visible");
+  modal.setAttribute("aria-hidden", "false");
+  document.querySelector("#sameLocationClose").focus();
+}
+
+function closeSameLocationModal() {
+  const modal = document.querySelector("#sameLocationModal");
+  modal.classList.remove("visible");
+  modal.setAttribute("aria-hidden", "true");
+  state.sameLocationPlaces = [];
 }
 
 function markerModeClass(place) {
@@ -371,7 +544,7 @@ function selectPlace(place) {
   const detail = document.querySelector("#hospitalDetail");
   detail.classList.remove("route-mode");
   detail.innerHTML = `<button class="detail-close" type="button" aria-label="닫기">×</button>
-    <div class="detail-head"><div><small>선택한 ${place.category === "PHARMACY" ? "약국" : "병원"}</small><h2>${escapeHtml(place.name)}</h2></div><span>${distanceInKilometers(state.location, place).toFixed(1)}km</span>${favoriteButton(place)}</div>
+    <div class="detail-head"><div><small>선택한 ${place.category === "PHARMACY" ? "약국" : "병원"}</small><h2>${escapeHtml(place.name)}</h2></div><span>${distanceLabel(distanceInKilometers(state.location, place))}</span>${favoriteButton(place)}</div>
     <p>${escapeHtml(place.address)}</p>
     <div class="place-information"><span>시설 구분</span><strong>${escapeHtml(place.facilityType || modeLabel())}</strong></div>
     <div class="detail-actions"><a href="tel:${place.phoneNumber}">전화하기</a><button type="button" data-detail-route>길찾기</button></div>`;
@@ -480,12 +653,14 @@ function clearRoute() {
 }
 
 function locate() {
-  initializeMap();
-  if (!navigator.geolocation) return useDefaultLocation("지도를 눌러 출발 위치를 선택하세요");
+  if (!navigator.geolocation) return showToast("이 브라우저에서는 위치를 확인할 수 없어요.");
+  const previousLabel = locationLabel.textContent;
+  const previousDataState = dataState.textContent;
   locationLabel.textContent = "현재 위치를 확인하고 있어요";
+  dataState.textContent = "위치 확인 중";
   let completed = false;
   const timeout = setTimeout(() => {
-    if (!completed) useDefaultLocation("지도를 눌러 출발 위치를 선택하세요");
+    if (!completed) locationUnavailable("위치 확인 시간이 지났어요. 지도나 주소로 찾아주세요.", previousLabel, previousDataState);
     completed = true;
   }, 6000);
   navigator.geolocation.getCurrentPosition(position => {
@@ -493,19 +668,20 @@ function locate() {
     completed = true;
     clearTimeout(timeout);
     state.location = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+    state.usingDefaultLocation = false;
     initializeMap(); updateLocationName(); loadNearby();
   }, () => {
     if (completed) return;
     completed = true;
     clearTimeout(timeout);
-    useDefaultLocation("지도를 눌러 출발 위치를 선택하세요");
+    locationUnavailable("위치를 사용할 수 없어요. 지도나 주소로 찾아주세요.", previousLabel, previousDataState);
   }, { enableHighAccuracy: true, timeout: 5000 });
 }
 
-function useDefaultLocation(message) {
-  state.location = DEFAULT_LOCATION;
-  locationLabel.textContent = message;
-  initializeMap(); loadNearby();
+function locationUnavailable(message, previousLabel, previousDataState) {
+  locationLabel.textContent = previousLabel;
+  dataState.textContent = previousDataState;
+  showToast(message);
 }
 
 document.querySelector("#myLocationButton").addEventListener("click", locate);
@@ -526,7 +702,9 @@ radiusSelect.addEventListener("change", event => {
     state.radiusByMode[state.searchMode] = selectedRadius;
   }
   radiusSelect.value = String(state.radiusKilometers);
-  locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
+  locationLabel.textContent = state.usingDefaultLocation
+    ? `판교테크노밸리 기준 · ${radiusLabel()}`
+    : `선택한 위치 기준 ${radiusLabel()}`;
   fitMapToRadius();
   loadNearby();
 });
@@ -547,11 +725,14 @@ function switchSearchMode(searchMode) {
   state.searchMode = searchMode;
   state.radiusKilometers = state.radiusByMode[searchMode];
   updateRadiusOptions();
-  locationLabel.textContent = `선택한 위치 기준 ${state.radiusKilometers}km`;
+  locationLabel.textContent = state.usingDefaultLocation
+    ? `판교테크노밸리 기준 · ${radiusLabel()}`
+    : `선택한 위치 기준 ${radiusLabel()}`;
   state.hospitals = [];
   stopRouteGuide();
   fitMapToRadius();
   closeGuardianModal();
+  closeSameLocationModal();
   document.querySelectorAll("[data-search-mode]").forEach(button => {
     const active = button.dataset.searchMode === searchMode;
     button.classList.toggle("active", active);
@@ -591,10 +772,11 @@ async function searchAddress(event) {
     if (!response.ok) throw new Error("주소 검색 실패");
     const result = await response.json();
     state.location = { latitude: result.latitude, longitude: result.longitude };
+    state.usingDefaultLocation = false;
     if (document.querySelector(".screen").classList.contains("routing")) stopRouteGuide();
     else clearRoute();
     closeHospitalDetail(); updateMapCenter();
-    locationLabel.textContent = `${result.address} · ${state.radiusKilometers}km`;
+    locationLabel.textContent = `${result.address} · ${radiusLabel()}`;
     loadNearby();
   } catch (error) {
     dataState.textContent = "주소를 찾지 못했어요";
@@ -605,8 +787,28 @@ async function start() {
   updateRadiusOptions();
   configureGuardianUi();
   configureFavoritesUi();
+  configureSameLocationUi();
   if (accessToken) void loadFavorites();
-  locate();
+  initializeMap();
+  void loadNearby();
+}
+
+function configureSameLocationUi() {
+  document.querySelector("#sameLocationClose").addEventListener("click", closeSameLocationModal);
+  document.querySelector("#sameLocationModal").addEventListener("click", event => {
+    if (event.target.id === "sameLocationModal") closeSameLocationModal();
+  });
+  document.querySelector("#sameLocationList").addEventListener("click", event => {
+    const item = event.target.closest("[data-same-location-index]");
+    if (!item) return;
+    const place = state.sameLocationPlaces[Number(item.dataset.sameLocationIndex)];
+    if (!place) return;
+    closeSameLocationModal();
+    selectHospital(place);
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && document.querySelector("#sameLocationModal").classList.contains("visible")) closeSameLocationModal();
+  });
 }
 
 function configureGuardianUi() {

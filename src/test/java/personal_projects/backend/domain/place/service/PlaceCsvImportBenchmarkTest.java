@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Timeout;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -24,6 +25,7 @@ import personal_projects.backend.domain.place.importer.PlaceCsvReader;
 import personal_projects.backend.domain.place.repository.PlaceCsvStageRepository;
 
 /** 로컬 MySQL에서 명시적으로 실행하는 CSV 갱신 비교 실험. 일반 테스트에서는 건너뛴다. */
+@Tag("benchmark")
 class PlaceCsvImportBenchmarkTest {
 
     private static final int BATCH_SIZE = 1_000;

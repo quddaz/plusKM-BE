@@ -14,6 +14,7 @@ import personal_projects.backend.domain.user.entity.User;
 import personal_projects.backend.domain.auth.token.JwtTokenProvider;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Component
@@ -33,9 +34,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
-            User user = jwtTokenProvider.resolveUser(token);
-            SecurityContextManager.setAuthentication(user);
-            log.debug("Authenticated user '{}' for URI '{}'", user.getId(), requestUri);
+            try {
+                User user = jwtTokenProvider.resolveUser(token);
+                SecurityContextManager.setAuthentication(user);
+                log.debug("Authenticated user '{}' for URI '{}'", user.getId(), requestUri);
+            } catch (NoSuchElementException exception) {
+                // 서명은 유효해도 사용자가 삭제됐다면 인증되지 않은 요청으로 처리한다.
+                org.springframework.security.core.context.SecurityContextHolder.clearContext();
+            }
         }
         filterChain.doFilter(request, response);
     }
