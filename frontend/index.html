@@ -44,6 +44,13 @@
             <b id="routeDistance"></b>
           </section>
           <section class="hospital-detail" id="hospitalDetail" aria-live="polite"></section>
+          <div class="modal-backdrop" id="sameLocationModal" aria-hidden="true">
+            <section class="guardian-panel same-location-panel" role="dialog" aria-modal="true" aria-labelledby="sameLocationTitle">
+              <header><div><small>지도에서 선택한 위치</small><h2 id="sameLocationTitle">같은 위치의 기관</h2></div><button id="sameLocationClose" type="button" aria-label="닫기">×</button></header>
+              <p class="same-location-address" id="sameLocationAddress"></p>
+              <div class="same-location-list" id="sameLocationList"></div>
+            </section>
+          </div>
           <div class="modal-backdrop" id="guardianModal" aria-hidden="true">
             <section class="guardian-panel" role="dialog" aria-modal="true" aria-labelledby="guardianTitle">
               <header><div><small>긴급 연락 설정</small><h2 id="guardianTitle">내 보호자</h2></div><button id="guardianClose" type="button" aria-label="닫기">×</button></header>
@@ -76,10 +83,10 @@
         <section class="bottom-sheet" id="bottomSheet">
           <button class="sheet-handle" id="sheetHandle" type="button" aria-label="병원 목록 펼치기"><span></span></button>
           <div class="sheet-summary">
-            <div><p id="locationLabel">현재 위치를 확인하고 있어요</p><h1>주변 <span id="resultType">응급실</span> <strong id="resultCount">0</strong>곳</h1></div>
-            <span id="dataState">연결 확인 중</span>
+            <div><p id="locationLabel">판교테크노밸리 기준 · 10km</p><h1>주변 <span id="resultType">응급실</span> <strong id="resultCount" hidden></strong><span id="resultCountSuffix" hidden>곳</span></h1></div>
+            <span id="dataState">응급실 확인 중</span>
           </div>
-          <p class="notice" id="resultNotice">병상 정보는 방문 전 전화로 확인해 주세요.</p>
+          <p class="notice" id="resultNotice">다른 지역은 내 위치·지도·주소로 바꿀 수 있어요.</p>
           <div class="hospital-list" id="hospitalList" aria-live="polite"></div>
         </section>
         <nav class="bottom-nav" aria-label="주요 메뉴">
@@ -103,7 +110,7 @@
       <h2>내 위치에서 응급실·병원·약국을 찾고<br />자동차 경로까지 확인하세요.</h2>
       <ul>
         <li>지도를 눌러 출발 위치 선택</li>
-        <li>응급실 최대 30km · 병원·약국 1km·3km 탐색</li>
+        <li>응급실 최대 30km · 병원·약국 최대 10km 탐색</li>
         <li>전화 연결과 자동차 경로 확인</li>
         <li>보호자에게 현재 위치 문자 작성</li>
       </ul>

@@ -45,3 +45,8 @@ out/
 /benchmark/render-tistory-html.mjs
 /benchmark/db-comparison-app/
 /benchmark/db-comparison-results/
+
+# 로컬 실험 산출물과 서버 준비 파일
+/benchmark/
+/deploy/
+.DS_Store

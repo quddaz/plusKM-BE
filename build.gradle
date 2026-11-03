@@ -7,6 +7,8 @@ plugins {
 group = 'personal-projects'
 version = '0.0.1-SNAPSHOT'
 
+ext['testcontainers.version'] = '1.21.4'
+
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
@@ -42,6 +44,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	// junit
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.testcontainers:mysql'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	// validation
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -66,5 +69,28 @@ dependencies {
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+	useJUnitPlatform {
+		excludeTags 'repository', 'integration', 'acceptance', 'benchmark'
+	}
 }
+
+['repositoryTest': 'repository', 'integrationTest': 'integration', 'acceptanceTest': 'acceptance'].each { taskName, testTag ->
+	tasks.register(taskName, Test) {
+		description = "Runs ${testTag} tests against an isolated MySQL container."
+		group = 'verification'
+		testClassesDirs = sourceSets.test.output.classesDirs
+		classpath = sourceSets.test.runtimeClasspath
+		useJUnitPlatform { includeTags testTag }
+		shouldRunAfter tasks.named('test')
+	}
+}
+
+tasks.named('integrationTest') { shouldRunAfter tasks.named('repositoryTest') }
+tasks.named('acceptanceTest') { shouldRunAfter tasks.named('integrationTest') }
+tasks.register('sshDeploymentTest', Exec) {
+	group = 'verification'
+	description = 'Checks SSH deployment scripts without contacting a server.'
+	commandLine 'bash', 'src/test/deploy/ssh-deploy-test.sh'
+}
+
+tasks.named('check') { dependsOn 'repositoryTest', 'integrationTest', 'acceptanceTest', 'sshDeploymentTest' }

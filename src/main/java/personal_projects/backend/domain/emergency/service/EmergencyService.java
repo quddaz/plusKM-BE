@@ -70,6 +70,10 @@ public class EmergencyService {
     }
 
     public EmergencyDetailResponse findEmergencyDetail(Long emergencyId) {
-        return emergencyRepository.findEmergencyDetail(emergencyId);
+        EmergencyDetailResponse detail = emergencyRepository.findEmergencyDetail(emergencyId);
+        if (detail == null) {
+            throw new NoSuchElementException("응급 정보를 찾을 수 없습니다.");
+        }
+        return detail;
     }
 }

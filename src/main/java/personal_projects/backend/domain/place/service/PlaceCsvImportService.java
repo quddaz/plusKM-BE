@@ -53,7 +53,7 @@ public class PlaceCsvImportService {
         int staged = stageRepository.countStaged();
         int active = stageRepository.countActivePlaces();
         boolean missingCategory = hospitals.imported() == 0 || pharmacies.imported() == 0;
-        boolean tooFewRows = staged == 0 || (active > 0 && staged < active / 2);
+        boolean tooFewRows = staged == 0 || (active > 0 && staged * 2L < active);
         if (missingCategory || tooFewRows) {
             throw new IllegalStateException(
                 "CSV 스테이징 행 수 검증 실패: hospitals=" + hospitals.imported()

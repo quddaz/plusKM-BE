@@ -1,0 +1,5 @@
+column0,column1,column2,column3,column4,column5,column6,column7,column8,column9,column10,column11,column12,column13,column14,column15,column16,column17,column18,column19,column20,column21,column22,column23,column24,column25,column26,column27,column28,column29
+,갱신 병원,,종합병원,,,,,,,갱신 병원 주소,031-111-2222,,,,,,,,,,,,,,,,,127.105,37.401
+,재등장 병원,,의원,,,,,,,재등장 병원 주소,031-222-3333,,,,,,,,,,,,,,,,,127.106,37.402
+,신규 병원,,의원,,,,,,,신규 병원 주소,031-333-4444,,,,,,,,,,,,,,,,,127.107,37.403
+,오류 행,,의원,,,,,,,오류 주소,031,,,,,,,,,,,,,,,,,invalid,37.4

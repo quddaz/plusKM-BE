@@ -35,6 +35,7 @@
     </springProfile>
 
     <springProfile name="prod">
+        <include resource="logs/console-appender.xml"/>
         <include resource="logs/common/file-info-appender.xml"/>
         <include resource="logs/common/file-warn-appender.xml"/>
         <include resource="logs/common/file-error-appender.xml"/>
@@ -49,6 +50,7 @@
         </logger>
 
         <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE-INFO"/>
             <appender-ref ref="FILE-WARN"/>
             <appender-ref ref="FILE-ERROR"/>
